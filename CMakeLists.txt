@@ -136,6 +136,7 @@ if (MSVC)
   add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
 endif()
 
+include(cmake/Shaders.cmake)
 add_subdirectory(components/ScriptLibrary)
 add_subdirectory(external/glad)
 add_subdirectory(external/imgui)
