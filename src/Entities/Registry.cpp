@@ -18,7 +18,7 @@ void Registry::DebugCreateEntities(float x, float y, float z)
 
 void Registry::DrawModels(graphics::ShaderManager& shaderManager)
 {
-	graphics::ShaderProgram* objectShader = shaderManager.GetShader("SkinnedMesh");
+	graphics::ShaderProgram* objectShader = shaderManager.GetShader("Object");
 
 	_registry.view<Model, Transform>().each([objectShader](Model& model, Transform& transform) {
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
@@ -29,6 +29,8 @@ void Registry::DrawModels(graphics::ShaderManager& shaderManager)
 		modelMatrix           = glm::scale(modelMatrix, transform.scale);
 
 //		objectShader->SetUniformValue("u_model", modelMatrix);
+		bgfx::setTransform(&modelMatrix);
+
 		const L3DMesh& mesh = Game::instance()->GetMeshPack().GetMesh(static_cast<uint32_t>(model.meshId));
 
 		for (auto& submeshId : model.submeshIds)
@@ -44,6 +46,7 @@ void Registry::DrawModels(graphics::ShaderManager& shaderManager)
 		modelMatrix           = glm::scale(modelMatrix, transform.scale);
 
 //		objectShader->SetUniformValue("u_model", modelMatrix);
+		bgfx::setTransform(&modelMatrix);
 
 		// temporary-ish:
 		MeshId meshID = MeshId::Dummy;
@@ -78,6 +81,7 @@ void Registry::DrawModels(graphics::ShaderManager& shaderManager)
 		modelMatrix           = glm::scale(modelMatrix, transform.scale);
 
 //		objectShader->SetUniformValue("u_model", modelMatrix);
+		bgfx::setTransform(&modelMatrix);
 
 		// temporary-ish until we read info.dat:
 		MeshId meshID = MeshId::Dummy;
