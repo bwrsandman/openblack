@@ -14,8 +14,6 @@ add_library(imgui STATIC
 	# opengl helper
 	imgui/examples/imgui_impl_sdl.h
 	imgui/examples/imgui_impl_sdl.cpp
-	imgui/examples/imgui_impl_opengl3.h
-	imgui/examples/imgui_impl_opengl3.cpp
 	# memory_editor
 	imgui_club/imgui_memory_editor/imgui_memory_editor.h
 	)
@@ -24,10 +22,6 @@ target_include_directories(imgui PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/imgui
 	${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples)
 
-# tell imgui we want to use GLAD as OpenGL loader
-target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
-
 target_link_libraries(imgui PUBLIC
 	SDL2::SDL2
-	glad
 	${OPENGL_LIBRARIES})
