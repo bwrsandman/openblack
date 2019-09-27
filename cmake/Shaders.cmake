@@ -1,4 +1,8 @@
-find_package(bgfx REQUIRED COMPONENTS shaderc)
+if(OPENBLACK_USE_SYSTEM_DEPS)
+	find_package(bgfx REQUIRED COMPONENTS shaderc)
+else()
+	add_executable(bgfx::shaderc ALIAS shaderc)
+endif()
 
 function(get_profile_ext PROFILE PROFILE_EXT)
 	string(REPLACE spirv spv PROFILE ${PROFILE})
