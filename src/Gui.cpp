@@ -813,11 +813,34 @@ void Gui::ShowProfilerWindow(Game& game)
 				auto stats = reinterpret_cast<const bgfx::Stats*>(data);
 				if (startTimestamp)
 				{
-					*startTimestamp = 1000.0f * (stats->viewStats[idx].gpuTimeBegin - stats->gpuTimeBegin) / (double)stats->gpuTimerFreq;
+					if (idx == 0)
+					{
+						*startTimestamp = 1000.0f * (stats->gpuTimeUpdateIndexBegin - stats->gpuTimeBegin) / (double)stats->gpuTimerFreq;
+					}
+					else if (idx == 1)
+					{
+						*startTimestamp = 1000.0f * (stats->gpuTimeUpdateVertexBegin - stats->gpuTimeBegin) / (double)stats->gpuTimerFreq;
+					}
+					else
+					{
+						*startTimestamp = 1000.0f * (stats->viewStats[idx-2].gpuTimeBegin - stats->gpuTimeBegin) / (double)stats->gpuTimerFreq;
+					}
+
 				}
 				if (endTimestamp)
 				{
-					*endTimestamp = 1000.0f * (stats->viewStats[idx].gpuTimeEnd - stats->gpuTimeBegin) / (double)stats->gpuTimerFreq;
+					if (idx == 0)
+					{
+						*endTimestamp = 1000.0f * (stats->gpuTimeUpdateIndexEnd - stats->gpuTimeBegin) / (double)stats->gpuTimerFreq;
+					}
+					else if (idx == 1)
+					{
+						*endTimestamp = 1000.0f * (stats->gpuTimeUpdateVertexEnd - stats->gpuTimeBegin) / (double)stats->gpuTimerFreq;
+					}
+					else
+					{
+						*endTimestamp = 1000.0f * (stats->viewStats[idx-2].gpuTimeEnd - stats->gpuTimeBegin) / (double)stats->gpuTimerFreq;
+					}
 				}
 				if (level)
 				{
@@ -825,10 +848,21 @@ void Gui::ShowProfilerWindow(Game& game)
 				}
 				if (caption)
 				{
-					*caption = stats->viewStats[idx].name;
+					if (idx == 0)
+					{
+						*caption = "Update Indices";
+					}
+					else if (idx == 1)
+					{
+						*caption = "Update Vertex";
+					}
+					else
+					{
+						*caption = stats->viewStats[idx-2].name;
+					}
 				}
-			}, stats, stats->numViews, 0, "GPU Frame",
-            0, 1000.0f * (stats->gpuTimeEnd - stats->gpuTimeBegin) / (double)stats->gpuTimerFreq, ImVec2(width, 0));
+			}, stats, stats->numViews + 2, 0, "GPU Frame",
+			0, 1000.0f * (stats->gpuTimeEnd - stats->gpuTimeBegin) / (double)stats->gpuTimerFreq, ImVec2(width, 0));
 
 		ImGui::Columns(2);
 		if (ImGui::CollapsingHeader("Details (CPU)", ImGuiTreeNodeFlags_DefaultOpen))
@@ -853,6 +887,14 @@ void Gui::ShowProfilerWindow(Game& game)
 		{
 			auto frameDuration = stats->gpuTimeEnd - stats->gpuTimeBegin;
 			ImGui::Text("Full Frame: %0.3f", 1000.0f * frameDuration / (double)stats->gpuTimerFreq);
+
+			auto updateIndexDuration = stats->gpuTimeUpdateIndexEnd - stats->gpuTimeUpdateIndexBegin;
+			ImGui::Text("    Update Index: %0.3f", 1000.0f * updateIndexDuration / (double)stats->gpuTimerFreq);
+			frameDuration -= updateIndexDuration;
+
+			auto updateVertexDuration = stats->gpuTimeUpdateVertexEnd - stats->gpuTimeUpdateVertexBegin;
+			ImGui::Text("    Update Vertex: %0.3f", 1000.0f * updateVertexDuration / (double)stats->gpuTimerFreq);
+			frameDuration -= updateVertexDuration;
 
 			for (uint8_t i = 0; i < stats->numViews; ++i)
 			{
