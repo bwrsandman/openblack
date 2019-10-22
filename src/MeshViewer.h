@@ -20,12 +20,20 @@
 
 #pragma once
 
+#include <memory>
+
 #include <AllMeshes.h>
 #include <Graphics/FrameBuffer.h>
-#include <memory>
+#include <Graphics/DebugLines.h>
 
 namespace openblack
 {
+
+namespace graphics
+{
+class DebugLines;
+}
+
 class MeshViewer
 {
   public:
@@ -40,6 +48,8 @@ class MeshViewer
 	MeshId _selectedMesh;
 	int _selectedSubMesh;
 	glm::vec3 _cameraPosition;
+	bool _viewBoundingBox;
+	std::unique_ptr<graphics::DebugLines> _boundingBox;
 	std::unique_ptr<graphics::FrameBuffer> _frameBuffer;
 };
 } // namespace openblack

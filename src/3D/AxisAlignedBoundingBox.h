@@ -18,39 +18,24 @@
  * along with openblack. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include <cstdint>
-#include <memory>
-
-#include <glm/glm.hpp>
-#include "ShaderProgram.h"
+#include <glm/vec3.hpp>
 
 namespace openblack
 {
-namespace graphics
+
+struct AxisAlignedBoundingBox
 {
-class Mesh;
-class DebugLines
-{
-  public:
-	static std::unique_ptr<DebugLines> CreateCross();
-	static std::unique_ptr<DebugLines> CreateBox(const glm::vec4 &color);
-	static std::unique_ptr<DebugLines> CreateLine(const glm::vec4& from, const glm::vec4& to, const glm::vec4& color);
+	glm::vec3 minima;
+	glm::vec3 maxima;
 
-	virtual ~DebugLines();
-
-	void Draw(uint8_t viewId, ShaderProgram &program) const;
-
-	void SetPose(const glm::vec3& center, const glm::vec3& size);
-
-  protected:
-	static std::unique_ptr<DebugLines> CreateDebugLines(uint32_t size, const void* data, uint32_t vertexCount);
-	explicit DebugLines(std::unique_ptr<Mesh>&& mesh);
-
-	std::unique_ptr<Mesh> _mesh;
-	glm::mat4 _model;
+	[[nodiscard]] inline glm::vec3 center() const
+	{
+		return (maxima + minima) * 0.5f;
+	}
+	[[nodiscard]] inline glm::vec3 size() const
+	{
+		return maxima - minima;
+	}
 };
 
-} // namespace graphics
-} // namespace openblack
+}  // namespace openblack::graphics
