@@ -43,6 +43,15 @@ void openblack::Profiler::End(Stage stage)
 	entry._finalized = true;
 }
 
+void openblack::Profiler::ManualInsert(openblack::Profiler::Stage stage, uint8_t level, std::chrono::system_clock::time_point start, std::chrono::system_clock::time_point end, int8_t frameOffset)
+{
+	auto& entry = _entries[(_currentEntry + _bufferSize + frameOffset) % _bufferSize]._stages[static_cast<uint8_t>(stage)];
+	entry._start = start;
+	entry._end = end;
+	entry._level = level;
+	entry._finalized = true;
+}
+
 void openblack::Profiler::Frame()
 {
 	auto& prevEntry = _entries[_currentEntry];

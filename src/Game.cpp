@@ -322,6 +322,22 @@ void Game::Run()
 		_renderer->Frame();
 		_profiler->End(Profiler::Stage::RendererFrame);
 
+		auto stats = bgfx::getStats();
+		_profiler->ManualInsert(Profiler::Stage::BgfxCpuSubmit, 1,
+								std::chrono::system_clock::time_point{std::chrono::nanoseconds{stats->cpuTimeBegin * (std::nano::den / stats->cpuTimerFreq)}},
+								std::chrono::system_clock::time_point{std::chrono::nanoseconds{stats->cpuTimeEnd * (std::nano::den / stats->cpuTimerFreq)}},
+								-1);
+		_profiler->ManualInsert(Profiler::Stage::BgfxCpuSort, 2,
+								std::chrono::system_clock::time_point{std::chrono::nanoseconds{stats->cpuTimeSortBegin * (std::nano::den / stats->cpuTimerFreq)}},
+								std::chrono::system_clock::time_point{std::chrono::nanoseconds{stats->cpuTimeSortEnd * (std::nano::den / stats->cpuTimerFreq)}},
+								-1);
+		for (uint16_t i = 0; i < 3; i++)
+		{
+			_profiler->ManualInsert(static_cast<Profiler::Stage>(static_cast<uint8_t>(Profiler::Stage::BgfxCpuEncodeView0) + i), 2,
+									std::chrono::system_clock::time_point{std::chrono::nanoseconds{stats->viewStats[i].cpuTimeBegin * (std::nano::den / stats->cpuTimerFreq)}},
+									std::chrono::system_clock::time_point{std::chrono::nanoseconds{stats->viewStats[i].cpuTimeEnd * (std::nano::den / stats->cpuTimerFreq)}},
+									-1);
+		}
 	}
 }
 

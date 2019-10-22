@@ -58,6 +58,11 @@ public:
 		MainPassDrawDebugCross,
 		GuiDraw,
 		RendererFrame,
+		BgfxCpuSubmit,
+		BgfxCpuSort,
+		BgfxCpuEncodeView0,
+		BgfxCpuEncodeView1,
+		BgfxCpuEncodeView2,
 
 		_count,
 	};
@@ -93,6 +98,11 @@ public:
 		"Draw Debug Cross",
 		"GUI Draw",
 		"Renderer Frame",
+		"bgfx CPU Submit",
+		"Sort",
+		"Reflection Pass",
+		"Main Pass",
+		"ImGui",
 	};
 
 	struct Entry
@@ -105,10 +115,11 @@ public:
 	void Frame();
 	void Begin(Stage stage);
 	void End(Stage stage);
+	void ManualInsert(Stage stage, uint8_t level, std::chrono::system_clock::time_point start, std::chrono::system_clock::time_point end, int8_t frameOffset);
 
 	[[ nodiscard ]] uint8_t GetCurrentEntryIndex() const
 	{
-		return (_currentEntry + _bufferSize - 1) % _bufferSize;
+		return (_currentEntry + _bufferSize - 2) % _bufferSize;
 	}
 
 	static constexpr uint8_t _bufferSize = 100;
