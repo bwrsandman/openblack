@@ -163,6 +163,19 @@ void L3DSubMesh::Load(IStream& stream)
 
 void L3DSubMesh::Submit(uint8_t viewId, const glm::mat4& modelMatrix, const ShaderProgram& program, uint64_t state, uint32_t rgba, bool preserveState) const
 {
+	Submit_(viewId, &modelMatrix, nullptr, 0, 1, program, state, rgba, preserveState);
+}
+
+void L3DSubMesh::Submit(uint8_t viewId, const bgfx::DynamicVertexBufferHandle& instanceBuffer, uint32_t instanceStart, uint32_t instanceCount,
+                        const graphics::ShaderProgram& program, uint64_t state, uint32_t rgba, bool preserveState) const
+{
+	Submit_(viewId, nullptr, &instanceBuffer, instanceStart, instanceCount, program, state, rgba, preserveState);
+}
+
+void L3DSubMesh::Submit_(uint8_t viewId, const glm::mat4* modelMatrix,
+                         const bgfx::DynamicVertexBufferHandle* instanceBuffer, uint32_t instanceStart, uint32_t instanceCount,
+                         const ShaderProgram& program, uint64_t state, uint32_t rgba, bool preserveState) const
+{
 	if (!_vertexBuffer || !_indexBuffer)
 		return;
 
@@ -184,7 +197,14 @@ void L3DSubMesh::Submit(uint8_t viewId, const glm::mat4& modelMatrix, const Shad
 
 		if (!subMeshPreserveState)
 		{
-			bgfx::setTransform(&modelMatrix);
+			if (modelMatrix)
+			{
+				bgfx::setTransform(modelMatrix);
+			}
+			if (instanceBuffer)
+			{
+				bgfx::setInstanceDataBuffer(*instanceBuffer, instanceStart, instanceCount);
+			}
 		}
 
 		subMeshPreserveState = preserveState || std::next(it) != _primitives.end();
@@ -204,6 +224,7 @@ void L3DSubMesh::Submit(uint8_t viewId, const glm::mat4& modelMatrix, const Shad
 		}
 
 		_indexBuffer->Bind(prim.indicesCount, prim.indicesOffset);
+
 		bgfx::submit(viewId, program.GetRawHandle(), 0, subMeshPreserveState);
 		lastTexture = texture;
 	}
