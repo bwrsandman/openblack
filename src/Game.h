@@ -47,6 +47,11 @@ class Sky;
 class Water;
 struct Transform;
 
+namespace dynamics
+{
+class DynamicsSystem;
+}
+
 namespace lhscriptx
 {
 class Script;
@@ -152,6 +157,7 @@ private:
 
 	std::unique_ptr<GameWindow> _window;
 	std::unique_ptr<Renderer> _renderer;
+	std::unique_ptr<dynamics::DynamicsSystem> _dynamicsSystem;
 	std::unique_ptr<Gui> _gui;
 	std::unique_ptr<Camera> _camera;
 	std::unique_ptr<Profiler> _profiler;
