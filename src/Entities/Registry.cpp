@@ -14,8 +14,10 @@
 #include "3D/MeshLookup.h"
 #include "3D/MeshPack.h"
 #include "AllMeshes.h"
+#include "Dynamics/DynamicsSystem.h"
 #include "Entities/Components/Abode.h"
 #include "Entities/Components/AnimatedStatic.h"
+#include "Entities/Components/RigidBody.h"
 #include "Entities/Components/Stream.h"
 #include "Entities/Components/Transform.h"
 #include "Entities/Components/Tree.h"
@@ -42,6 +44,11 @@ RegistryContext& Registry::Context()
 const RegistryContext& Registry::Context() const
 {
 	return _registry.ctx<RegistryContext>();
+}
+
+void Registry::RegisterRigidBodies(dynamics::DynamicsSystem& dynamics)
+{
+	_registry.view<RigidBody>().each([&dynamics](RigidBody& body) { dynamics.AddRigidBody(&body.handle); });
 }
 
 void Registry::PrepareDrawDescs(bool drawBoundingBox)
@@ -406,4 +413,25 @@ void Registry::SetDirty()
 	auto& renderCtx = Context().renderContext;
 	renderCtx.dirty = false;
 }
+
+void Registry::UpdatePhysicsTransforms()
+{
+	auto& renderCtx = Context().renderContext;
+	_registry.view<Transform, const RigidBody>().each([&renderCtx](Transform& transform, const RigidBody& body) {
+		btTransform trans;
+		body.motionState->getWorldTransform(trans);
+
+		transform.position.x = trans.getOrigin().getX();
+		transform.position.y = trans.getOrigin().getY();
+		transform.position.z = trans.getOrigin().getZ();
+
+		glm::quat quaternion(trans.getRotation().getW(), trans.getRotation().getX(), trans.getRotation().getY(),
+		                     trans.getRotation().getZ());
+
+		transform.rotation = glm::mat3_cast(quaternion);
+
+		renderCtx.dirty = true;
+	});
+}
+
 } // namespace openblack::entities
