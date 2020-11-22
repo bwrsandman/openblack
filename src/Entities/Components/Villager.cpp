@@ -9,6 +9,7 @@
 
 #include "Villager.h"
 
+#include <cassert>
 #include <stdexcept>
 #include <string_view>
 
@@ -69,7 +70,9 @@ void Villager::Create(const glm::vec3& abodePosition, const glm::vec3& position,
 	const auto lifeStage = age >= 18 ? Villager::LifeStage::Adult : Villager::LifeStage::Child;
 	const auto sex = (role == Villager::Role::HOUSEWIFE) ? Villager::Sex::FEMALE : Villager::Sex::MALE;
 	const auto task = Villager::Task::IDLE;
-	const auto& villager = registry.Assign<Villager>(entity, health, age, hunger, lifeStage, sex, tribe, role, task);
+	const auto action = LivingAction {{LivingState::CREATED}, 0};
+	const auto& villager =
+	    registry.Assign<Villager>(entity, health, age, hunger, lifeStage, sex, tribe, role, task, std::move(action));
 	registry.Assign<Mesh>(entity, villagerMeshLookup[villager.GetVillagerType()], static_cast<int8_t>(0),
 	                      static_cast<int8_t>(0));
 
@@ -136,6 +139,25 @@ Villager::Type Villager::GetVillagerType() const
 	Villager::Type villagerType = {tribe, lifeStage, sex, importantRole};
 
 	return villagerType;
+}
+
+LivingState Villager::GetState(LivingAction::Index index) const
+{
+	assert(index < LivingAction::Index::_Count);
+	return livingAction.states[static_cast<size_t>(index)];
+}
+
+void Villager::SetState(LivingAction::Index index, LivingState state)
+{
+	assert(index < LivingAction::Index::_Count);
+	if (livingAction.states[static_cast<size_t>(index)] != state)
+	{
+		livingAction.states[static_cast<size_t>(index)] = state;
+		if (index == LivingAction::Index::Top)
+		{
+			livingAction.turnsSinceStateChange = 0;
+		}
+	}
 }
 
 std::optional<std::reference_wrapper<const Abode>> Villager::GetAbode() const

@@ -112,6 +112,7 @@ public:
 		bool showLandIsland {false};
 		bool showVillagerNames {false};
 		bool debugVillagerNames {false};
+		bool debugVillagerStates {false};
 
 		bool drawSky {true};
 		bool drawWater {true};

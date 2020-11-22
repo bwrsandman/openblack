@@ -143,9 +143,9 @@ struct Villager
 	{
 		std::size_t operator()(const Villager::Type& type) const
 		{
-			auto tribe = std::get<Tribe>(type);
-			auto villagerSex = std::get<Sex>(type);
-			auto lifeStage = std::get<LifeStage>(type);
+			const auto tribe = std::get<Tribe>(type);
+			const auto villagerSex = std::get<Sex>(type);
+			const auto lifeStage = std::get<LifeStage>(type);
 			auto role = std::get<Role>(type);
 			auto h1 = std::hash<decltype(tribe)>()(tribe);
 			auto h2 = std::hash<decltype(villagerSex)>()(villagerSex);
@@ -161,6 +161,26 @@ struct Villager
 		}
 	};
 
+	struct LivingAction
+	{
+		enum class Index : uint8_t
+		{
+			Top,
+			Final,
+			Previous,
+
+			_Count,
+		};
+		static constexpr std::array<std::string_view, static_cast<size_t>(Index::_Count)> IndexStrings = {
+		    "Top",
+		    "Final",
+		    "Previous",
+		};
+
+		std::array<LivingState, static_cast<size_t>(Index::_Count)> states;
+		uint16_t turnsSinceStateChange;
+	};
+
 	uint32_t health;
 	uint32_t age;
 	uint32_t hunger;
@@ -169,12 +189,15 @@ struct Villager
 	Tribe tribe;
 	Role role;
 	Task task;
+	LivingAction livingAction;
 	std::optional<entt::entity> town;
 	std::optional<entt::entity> abode;
 
 	static void Create(const glm::vec3& abodePosition, const glm::vec3& position, Tribe tribe, Role role, uint32_t age);
 	static bool IsImportantRole(Role role);
 	Type GetVillagerType() const;
+	LivingState GetState(LivingAction::Index index) const;
+	void SetState(LivingAction::Index index, LivingState state);
 	std::optional<std::reference_wrapper<const Abode>> GetAbode() const;
 	std::optional<std::reference_wrapper<Town>> GetTown() const;
 };

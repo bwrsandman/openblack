@@ -713,6 +713,7 @@ bool Gui::ShowMenu(Game& game)
 			if (ImGui::BeginMenu("Villager Names"))
 			{
 				ImGui::Checkbox("Show", &config.showVillagerNames);
+				ImGui::Checkbox("Show States", &config.debugVillagerStates);
 				ImGui::Checkbox("Debug", &config.debugVillagerNames);
 
 				ImGui::EndMenu();
@@ -893,7 +894,7 @@ std::optional<glm::uvec4> Gui::RenderVillagerName(const std::vector<glm::vec4>& 
 		textColor = ImVec4(adjustedColor.r, adjustedColor.g, adjustedColor.b, adjustedColor.a);
 	}
 
-	const std::string fullText = name + "\n" + text;
+	std::string fullText = name + "\n" + text;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	glm::vec4 boxExtent;
@@ -955,6 +956,8 @@ std::optional<glm::uvec4> Gui::RenderVillagerName(const std::vector<glm::vec4>& 
 void Gui::ShowVillagerNames(const Game& game)
 {
 	using namespace entities::components;
+	using LivingAction = openblack::entities::components::Villager::LivingAction;
+	using Sex = openblack::entities::components::Villager::Sex;
 
 	const auto& config = game.GetConfig();
 	if (!config.showVillagerNames)
@@ -991,10 +994,26 @@ void Gui::ShowVillagerNames(const Game& game)
 		// TODO(bwrsandman): Get owner player and associated color
 		glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 		// Female villagers have a lighter colour
-		if (entity.sex == Villager::Sex::FEMALE)
+		if (entity.sex == Sex::FEMALE)
 		{
 			color += glm::vec4((glm::vec3(1.0f) - glm::vec3(color)) * glm::vec3(144.0f / 255.0f), color.a);
 			color = glm::saturate(color);
+		}
+
+		const std::string name = "Villager #" + std::to_string(i);
+		const std::string stateHelpText = "TODO: STATE HELP TEXT";
+		std::string details = fmt::format("{}\nA:{} L:{}%, H:{}%", stateHelpText, entity.age, entity.health, entity.hunger);
+		if (config.debugVillagerStates)
+		{
+			details += fmt::format("\n"
+			                       "Top State:      {}\n"
+			                       "Final State:    {}\n"
+			                       "Previous State: {}\n"
+			                       "Turns since last state change: {}",
+			                       LivingStateStrings[static_cast<size_t>(entity.GetState(LivingAction::Index::Top))],
+			                       LivingStateStrings[static_cast<size_t>(entity.GetState(LivingAction::Index::Final))],
+			                       LivingStateStrings[static_cast<size_t>(entity.GetState(LivingAction::Index::Previous))],
+			                       entity.livingAction.turnsSinceStateChange);
 		}
 
 		std::function<void(void)> debugCallback;
@@ -1013,14 +1032,37 @@ void Gui::ShowVillagerNames(const Game& game)
 				ImGui::Combo("Tribe", &entity.tribe, TribeStrs);
 				ImGui::Combo("Role", &entity.role, Villager::RoleStrs);
 				ImGui::Combo("Task", &entity.task, Villager::TaskStrs);
+
+				for (size_t index = 0; index < static_cast<size_t>(LivingAction::Index::_Count); ++index)
+				{
+					if (ImGui::BeginCombo(
+					        LivingAction::IndexStrings[index].data(),
+					        LivingStateStrings[static_cast<size_t>(entity.GetState(static_cast<LivingAction::Index>(index)))]
+					            .data()))
+					{
+						for (size_t n = 0; n < LivingStateStrings.size(); n++)
+						{
+							const bool is_selected =
+							    (static_cast<size_t>(entity.GetState(static_cast<LivingAction::Index>(index))) == n);
+							if (ImGui::Selectable(LivingStateStrings[n].data(), is_selected))
+							{
+								entity.SetState(static_cast<LivingAction::Index>(index), static_cast<LivingState>(n));
+							}
+
+							// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+							if (is_selected)
+							{
+								ImGui::SetItemDefaultFocus();
+							}
+						}
+						ImGui::EndCombo();
+					}
+				}
 			};
 		}
 
-		const auto area = RenderVillagerName(coveredAreas, "Villager #" + std::to_string(i),
-		                                     fmt::format("TODO: STATE HELP TEXT"
-		                                                 "\nA:{} L:{}%, H:{}%",
-		                                                 entity.age, entity.health, entity.hunger),
-		                                     color, ImVec2(screenPoint.x, viewport.w - screenPoint.y), 100.0f, debugCallback);
+		const auto area = RenderVillagerName(coveredAreas, name, details, color,
+		                                     ImVec2(screenPoint.x, viewport.w - screenPoint.y), 100.0f, debugCallback);
 		if (area.has_value())
 		{
 			coveredAreas.emplace_back(area.value());

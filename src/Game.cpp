@@ -208,12 +208,13 @@ bool Game::GameLogicLoop()
 		return false;
 	}
 
-	const auto& registry = GetEntityRegistry();
+	auto& registry = GetEntityRegistry();
 
 	// Build Map Grid Acceleration Structure
 	_entityMap->Rebuild();
 
-	// TODO: update entities
+	// Update Entities
+	registry.Each<Villager>([](Villager& entity) { ++entity.livingAction.turnsSinceStateChange; });
 
 	_lastGameLoopTime = currentTime;
 	_turnDeltaTime = delta;
