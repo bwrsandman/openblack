@@ -9,8 +9,11 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 #include <unordered_map>
+
+#include <glm/fwd.hpp>
 
 namespace openblack::entities::components
 {
@@ -22,6 +25,8 @@ struct Town
 	Id id;
 	std::unordered_map<std::string, float> beliefs;
 	bool uninhabitable = false;
+
+	static std::optional<Town::Id> FindClosest(const glm::vec3& point);
 };
 
 } // namespace openblack::entities::components
