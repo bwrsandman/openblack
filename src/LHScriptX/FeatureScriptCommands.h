@@ -44,7 +44,7 @@ public:
 	static void CreateTownCentreSpellIcon(int32_t, const std::string&);
 	static void CreateSpellIcon(glm::vec3 position, const std::string&, int32_t, int32_t, int32_t);
 	static void CreatePlannedSpellIcon(int32_t, glm::vec3 position, const std::string&, int32_t, int32_t, int32_t);
-	static void CreateVillager(glm::vec3, glm::vec3, const std::string&);
+	static void CreateVillager(glm::vec3, const std::string&, int32_t);
 	static void CreateTownVillager(int32_t townId, glm::vec3 position, const std::string& villagerType, int32_t age);
 	static void CreateSpecialTownVillager(int32_t, glm::vec3, int32_t, int32_t);
 	static void CreateVillagerPos(glm::vec3, glm::vec3, const std::string&, int32_t);

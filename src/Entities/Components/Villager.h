@@ -15,6 +15,8 @@
 #include <string_view>
 #include <tuple>
 
+#include <glm/fwd.hpp>
+
 #include "Enums.h"
 
 namespace openblack::entities::components
@@ -163,6 +165,7 @@ struct Villager
 	Role role;
 	Task task;
 
+	static void Create(const glm::vec3& abodePosition, const glm::vec3& position, Tribe tribe, Role role, uint32_t age);
 	static bool IsImportantRole(Role role);
 	Type GetVillagerType() const;
 };
