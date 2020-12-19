@@ -1001,6 +1001,10 @@ void Gui::ShowVillagerNames(const Game& game)
 		if (config.debugVillagerNames)
 		{
 			debugCallback = [&entity] {
+				if (!entity.abode.has_value())
+				{
+					ImGui::Text("Homeless");
+				}
 				ImGui::InputInt("Health", reinterpret_cast<int*>(&entity.health));
 				ImGui::InputInt("Age", reinterpret_cast<int*>(&entity.age));
 				ImGui::InputInt("Hunger", reinterpret_cast<int*>(&entity.hunger));

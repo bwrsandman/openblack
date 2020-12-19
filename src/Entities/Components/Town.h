@@ -10,9 +10,11 @@
 #pragma once
 
 #include <optional>
+#include <set>
 #include <string>
 #include <unordered_map>
 
+#include <entt/fwd.hpp>
 #include <glm/fwd.hpp>
 
 namespace openblack::entities::components
@@ -25,8 +27,12 @@ struct Town
 	Id id;
 	std::unordered_map<std::string, float> beliefs;
 	bool uninhabitable = false;
+	std::set<entt::entity> homelessVillagers;
 
 	static std::optional<Town::Id> FindClosest(const glm::vec3& point);
+
+	std::optional<entt::entity> FindAbodeWithSpace() const;
+	void AddHomelessVillager(entt::entity entity);
 };
 
 } // namespace openblack::entities::components

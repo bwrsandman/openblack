@@ -14,18 +14,52 @@
 
 #include <glm/gtx/euler_angles.hpp>
 
+#include "Abode.h"
 #include "Common/MeshLookup.h"
 #include "Entities/Registry.h"
 #include "Game.h"
 #include "Mesh.h"
+#include "Town.h"
 #include "Transform.h"
 
 using namespace openblack;
-using openblack::entities::components::Villager;
+using namespace openblack::entities::components;
 
 void Villager::Create(const glm::vec3& abodePosition, const glm::vec3& position, Tribe tribe, Role role, uint32_t age)
 {
+	const auto& infoConstants = Game::instance()->GetInfoConstants();
 	auto& registry = Game::instance()->GetEntityRegistry();
+	auto& context = registry.Context();
+
+	// Find Abode and Town
+	std::optional<entt::entity> foundAbode;
+	std::optional<Town::Id> town = std::nullopt;
+	registry.Each<const Abode, const Transform>(
+	    [&foundAbode, &town, &context, &infoConstants, &abodePosition](entt::entity entity, auto component, auto transform) {
+		    if (foundAbode.has_value())
+		    {
+			    return;
+		    }
+		    const auto door = static_cast<glm::mat4>(transform) * glm::vec4(component.GetDoorOffset(), 1.0f);
+		    if (glm::floor(abodePosition.x / 10.0f) == glm::floor(door.x / 10.0f) &&
+		        glm::floor(abodePosition.z / 10.0f) == glm::floor(door.z / 10.0f))
+		    {
+			    auto townItr = context.towns.find(component.townId);
+			    if (townItr != context.towns.end())
+			    {
+				    town = townItr->first;
+			    }
+
+			    const auto info = infoConstants.GetAbodeInfo(component.type);
+			    if (info.has_value())
+			    {
+				    if (static_cast<int>(component.inhabitants.size()) < info->get().maxCapacity)
+				    {
+					    foundAbode = entity;
+				    }
+			    }
+		    }
+	    });
 
 	const auto entity = registry.Create();
 	registry.Assign<Transform>(entity, position, glm::eulerAngleY(glm::radians(180.0f)), glm::vec3(1.0));
@@ -37,6 +71,25 @@ void Villager::Create(const glm::vec3& abodePosition, const glm::vec3& position,
 	const auto& villager = registry.Assign<Villager>(entity, health, age, hunger, lifeStage, sex, tribe, role, task);
 	registry.Assign<Mesh>(entity, villagerMeshLookup[villager.GetVillagerType()], static_cast<int8_t>(0),
 	                      static_cast<int8_t>(0));
+
+	if (!foundAbode.has_value() && town.has_value())
+	{
+		foundAbode = registry.Get<Town>(context.towns[*town]).FindAbodeWithSpace();
+	}
+
+	if (foundAbode.has_value())
+	{
+		registry.Get<Abode>(*foundAbode).AddVillager(entity);
+	}
+	else if (town.has_value())
+	{
+		registry.Get<Town>(context.towns[*town]).AddHomelessVillager(entity);
+	}
+	else
+	{
+		// TODO(bwrsandman): Add to a list of villagers without towns
+		SPDLOG_LOGGER_ERROR(spdlog::get("scripting"), "Adding villagers without towns is not yet implemented.");
+	}
 }
 
 bool Villager::IsImportantRole(Villager::Role role)
@@ -82,4 +135,28 @@ Villager::Type Villager::GetVillagerType() const
 	Villager::Type villagerType = {tribe, lifeStage, sex, importantRole};
 
 	return villagerType;
+}
+
+std::optional<std::reference_wrapper<const Abode>> Villager::GetAbode() const
+{
+	if (!abode.has_value())
+	{
+		return std::nullopt;
+	}
+
+	const auto& registry = Game::instance()->GetEntityRegistry();
+	auto& component = registry.Get<Abode>(abode.value());
+	return std::reference_wrapper<const Abode>(component);
+}
+
+std::optional<std::reference_wrapper<Town>> Villager::GetTown() const
+{
+	if (!town.has_value())
+	{
+		return std::nullopt;
+	}
+
+	auto& registry = Game::instance()->GetEntityRegistry();
+	auto& component = registry.Get<Town>(town.value());
+	return std::reference_wrapper<Town>(component);
 }

@@ -11,7 +11,12 @@
 
 #include <array>
 #include <cstdint>
+#include <functional>
 #include <glm/vec3.hpp>
+#include <optional>
+
+#include "Entities/Components/Abode.h"
+#include "Enums.h"
 
 namespace openblack
 {
@@ -1819,7 +1824,11 @@ struct InfoConstants
 	std::array<GCreaturePenInfo, 5> creaturePen;
 	std::array<GWorshipSiteInfo, 9> worshipSite;
 	std::array<GSpellIconInfo, 2> spellIcon;
+
+private:
 	std::array<GAbodeInfo, 147> abode;
+
+public:
 	std::array<GVillagerInfo, 84> villager;
 	std::array<GSpecialVillagerInfo, 0x30> specialVillager;
 	std::array<GTreeInfo, 23> tree;
@@ -1896,6 +1905,8 @@ struct InfoConstants
 	std::array<GSpookyVoiceInfo, 5> spookyVoice;
 	std::array<GScriptOpposingCreature, 17> scriptOpposingCreature;
 	std::array<GToolTipsInfo, 170> toolTips;
+
+	std::optional<std::reference_wrapper<const GAbodeInfo>> GetAbodeInfo(entities::components::Abode::Info id) const;
 };
 #pragma pack(pop)
 static_assert(std::is_trivial<InfoConstants>::value, "GInfo must be trivial to be read properly");

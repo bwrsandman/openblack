@@ -11,11 +11,51 @@
 
 #include <glm/vec3.hpp>
 
+#include "Abode.h"
 #include "Entities/Registry.h"
 #include "Game.h"
 #include "Transform.h"
 
 using namespace openblack::entities::components;
+
+std::optional<entt::entity> Town::FindAbodeWithSpace() const
+{
+	const auto& infoConstants = Game::instance()->GetInfoConstants();
+	auto& registry = Game::instance()->GetEntityRegistry();
+
+	std::optional<entt::entity> result;
+	registry.Each<const Abode>([this, &infoConstants, &result](entt::entity entity, auto component) {
+		if (result.has_value() || component.townId != id)
+		{
+			return;
+		}
+
+		const auto info = infoConstants.GetAbodeInfo(component.type);
+		if (info.has_value())
+		{
+			if (static_cast<int>(component.inhabitants.size()) < info->get().maxCapacity)
+			{
+				result = entity;
+			}
+		}
+	});
+
+	return result;
+}
+
+void Town::AddHomelessVillager(entt::entity entity)
+{
+	const auto& infoConstants = Game::instance()->GetInfoConstants();
+	auto& registry = Game::instance()->GetEntityRegistry();
+	auto& registryContext = registry.Context();
+
+	auto& villager = registry.Get<Villager>(entity);
+	// TODO(bwrsandman): if already assigned to abode or other villager homeless list, remove
+	assert(!villager.abode.has_value());
+	assert(villager.town.value_or(registryContext.towns[id]) == registryContext.towns[id]);
+	homelessVillagers.insert(entity);
+	villager.town = std::make_optional(registry.ToEntity(*this));
+}
 
 std::optional<Town::Id> Town::FindClosest(const glm::vec3& point)
 {

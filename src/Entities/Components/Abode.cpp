@@ -13,11 +13,14 @@
 
 #include <spdlog/spdlog.h>
 
+#include "3D/L3DMesh.h"
+#include "3D/MeshPack.h"
 #include "Entities/Registry.h"
 #include "Game.h"
 #include "Mesh.h"
 #include "Town.h"
 #include "Transform.h"
+#include "Villager.h"
 
 using namespace openblack::entities::components;
 
@@ -175,4 +178,38 @@ void Abode::Create(uint32_t townId, const glm::vec3& position, const std::string
 	{
 		SPDLOG_LOGGER_ERROR(spdlog::get("scripting"), "Function {} has invalid Abode Info ({}).", __func__, abodeInfo);
 	}
+}
+
+void Abode::AddVillager(entt::entity entity)
+{
+	const auto& infoConstants = Game::instance()->GetInfoConstants();
+	auto& registry = Game::instance()->GetEntityRegistry();
+	auto& registryContext = registry.Context();
+
+	const auto info = infoConstants.GetAbodeInfo(type);
+	if (info.has_value())
+	{
+		auto& villager = registry.Get<Villager>(entity);
+		// TODO(bwrsandman): if already assigned to abode or villager homeless list, remove
+		assert(!villager.abode.has_value());
+		assert(villager.town.value_or(registryContext.towns[townId]) == registryContext.towns[townId]);
+		if (static_cast<int>(inhabitants.size()) < info->get().maxCapacity)
+		{
+			inhabitants.insert(entity);
+			villager.abode = registry.ToEntity(*this);
+		}
+		else
+		{
+			SPDLOG_LOGGER_ERROR(spdlog::get("scripting"), "Attempting to add villager to abode beyond capacity");
+			assert(false);
+		}
+	}
+}
+
+glm::vec3 Abode::GetDoorOffset() const
+{
+	const auto meshId = abodeMeshLookup[type];
+	const auto& mesh = Game::instance()->GetMeshPack().GetMesh(meshId);
+	auto doorPos = mesh.GetDoorPos();
+	return doorPos.value_or(glm::vec3());
 }
