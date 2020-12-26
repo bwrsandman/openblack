@@ -7,5 +7,8 @@
  * openblack is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#define GIT_SHA1 "@GIT_SHA1@"
+#ifndef GIT_SHA1
+#define GIT_SHA1 "UnknownVersion"
+#endif
+
 const char* kGitSHA1Hash = GIT_SHA1;

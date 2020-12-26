@@ -7,9 +7,6 @@ set(OPENBLACK_RC ${CMAKE_SOURCE_DIR}/assets/resource/icon/openblack.rc)
 add_definitions(-DGLM_FORCE_LEFT_HANDED -DGLM_FORCE_RADIANS
                 -DGLM_ENABLE_EXPERIMENTAL)
 
-configure_file("${CMAKE_CURRENT_LIST_DIR}/GitSHA1.cpp.in"
-               "${CMAKE_CURRENT_BINARY_DIR}/GitSHA1.cpp" @ONLY)
-
 file(GLOB OPENBLACK_IMGUI_VS_SHADERS
      "${CMAKE_SOURCE_DIR}/assets/shaders/imgui/vs_*.sc")
 file(GLOB OPENBLACK_IMGUI_FS_SHADERS
@@ -70,7 +67,6 @@ add_executable(
   openblack
   ${OPENBLACK_SOURCES}
   ${OPENBLACK_HEADERS}
-  "${CMAKE_CURRENT_BINARY_DIR}/GitSHA1.cpp"
   ${OPENBLACK_RC}
   ${OPENBLACK_SHADERS}
   ${OPENBLACK_VERTEX_SHADERS}
@@ -123,7 +119,10 @@ else()
   endif()
 endif()
 
-target_compile_definitions(openblack PRIVATE "$<$<CONFIG:DEBUG>:OPENBLACK_DEBUG>")
+target_compile_definitions(openblack PRIVATE
+  "$<$<CONFIG:DEBUG>:OPENBLACK_DEBUG>"
+  GIT_SHA1=\"${GIT_SHA1}\"
+)
 
 if(MSVC)
   set(CMAKE_CONFIGURATION_TYPES
