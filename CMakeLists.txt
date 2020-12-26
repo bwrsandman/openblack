@@ -154,7 +154,21 @@ else()
   set_property(TARGET bimg PROPERTY POSITION_INDEPENDENT_CODE ON)
   set_property(TARGET astc-codec PROPERTY POSITION_INDEPENDENT_CODE ON)
   add_library(bgfx::bgfx ALIAS bgfx)
-  add_executable(bgfx::shaderc ALIAS shaderc)
+  # If cross compiling, we need a host-compatible version of shaderc to compile shaders
+  if(CMAKE_CROSSCOMPILING)
+    find_program(shaderc_EXECUTABLE REQUIRED
+      NAMES shaderc
+      PATHS
+      ${CMAKE_CURRENT_SOURCE_DIR}/cmake-build-debug/bin
+      ${CMAKE_CURRENT_SOURCE_DIR}/cmake-build-release/bin
+    )
+    add_executable(bgfx::shaderc IMPORTED)
+    set_target_properties(bgfx::shaderc PROPERTIES
+      IMPORTED_LOCATION "${shaderc_EXECUTABLE}"
+      )
+  else()
+    add_executable(bgfx::shaderc ALIAS shaderc)
+  endif()
 endif()
 
 FetchContent_Declare(
@@ -189,7 +203,9 @@ add_subdirectory(apps/packtool)
 add_subdirectory(apps/lndtool)
 add_subdirectory(apps/anmtool)
 add_subdirectory(apps/morphtool)
-add_subdirectory(ci/mock)
+if(NOT CMAKE_CROSSCOMPILING)  # Requires python and running compiled apps
+  add_subdirectory(ci/mock)
+endif()
 
 # Set openblack project as default startup project in Visual Studio
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT
