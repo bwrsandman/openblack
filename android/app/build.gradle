@@ -1,0 +1,61 @@
+plugins {
+    id 'com.android.application'
+}
+
+def buildDependencies = project.hasProperty('BUILD_DEPENDENCIES');
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
+    android.ndkVersion '22.0.7026061' // for filesystem`
+
+    defaultConfig {
+        applicationId "org.openblack.app"
+        minSdkVersion 16
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // for entt, download a version of cmake and extract it while keeping the version number in the directory name
+                // Then in openblack_root/android/local.properties add "cmake.dir=/path/to/cmake_directory_with_version"
+                version "3.12.4"
+                cppFlags "-std=c++17"
+                if (buildDependencies) {
+                    arguments "-DANDROID_APP_PLATFORM=android-16", "-DANDROID_STL=c++_static", "-DOPENBLACK_BUILD_BGFX=ON", "-DOPENBLACK_FETCH_DEPENDENCIES=ON"
+                }
+                else {
+                    arguments "-DANDROID_APP_PLATFORM=android-16", "-DANDROID_STL=c++_static"
+                }
+                // TODO(bwrsandman): armeabi-v7a requires linking SDL2 with cpu_features
+                // abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+                abiFilters 'arm64-v8a', 'x86', 'x86_64'
+                targets "openblack"
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path '../../CMakeLists.txt'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar', '*.so'], dir: 'libs')
+}
