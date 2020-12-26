@@ -17,6 +17,11 @@ endif()
 
 project(openblack)
 
+option(OPENBLACK_FETCH_DEPENDENCIES
+  "Fetch and build dependencies alongside project (such as with Android)" OFF)
+option(OPENBLACK_BUILD_BGFX
+  "Build bgfx alongside project (only use for developing bgfx)" OFF)
+
 # Configure C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -33,15 +38,55 @@ check_include_file_cxx(filesystem HAS_FILESYSTEM)
 
 option(OPENBLACK_WARNINGS_AS_ERRORS "Treat warnings as errors (disable easier prototyping, enable for CI)" OFF)
 
+if(OPENBLACK_FETCH_DEPENDENCIES)
+  FetchContent_Declare(
+    sdl2
+    URL https://www.libsdl.org/release/SDL2-2.0.12.tar.gz
+    URL_HASH SHA1=e8ba91bf5eb438dbcf1fedf0530a1bcbe30d3bb6
+  )
+  FetchContent_MakeAvailable(sdl2)
+  add_library(SDL2::SDL2 ALIAS SDL2)
 # Special case for SDL2 dependency, goal is to find a config that exports SDL2::SDL2 target
 # libsdl2-dev has a `sdl2-config.cmake` that doesn't export this, but vcpkg does..
-find_package(SDL2 CONFIG QUIET)
-if(NOT TARGET SDL2::SDL2)
-  find_package(SDL2 MODULE REQUIRED)
+else()
+  find_package(SDL2 CONFIG QUIET)
+  if(NOT TARGET SDL2::SDL2)
+    find_package(SDL2 MODULE REQUIRED)
+  endif()
 endif()
 
+if(OPENBLACK_FETCH_DEPENDENCIES)
+  FetchContent_Declare(
+    cxxopts
+    URL https://github.com/jarro2783/cxxopts/archive/v2.2.1.tar.gz
+    URL_HASH SHA1=a94880856d9112e6a32374d1ab454ca968f82b1a
+  )
+  FetchContent_MakeAvailable(cxxopts)
+  add_library(cxxopts::cxxopts ALIAS cxxopts)
+
+  FetchContent_Declare(
+    entt
+    URL https://github.com/skypjack/entt/archive/v3.5.2.tar.gz
+    URL_HASH SHA1=edd675864814622b50ac074f70c55f18c23a2807
+  )
+  FetchContent_MakeAvailable(entt)
+  add_library(EnTT::EnTT ALIAS EnTT)
+
+  FetchContent_Declare(spdlog
+    URL https://github.com/gabime/spdlog/archive/v1.4.1.tar.gz
+    URL_HASH SHA1=efe84923e6dd4628550a297d77bc75e145ca3ac3
+  )
+  FetchContent_MakeAvailable(spdlog)
+  add_library(spdlog::spdlog ALIAS spdlog)
+
+  FetchContent_Declare(glm
+    URL https://github.com/g-truc/glm/releases/download/0.9.9.8/glm-0.9.9.8.zip
+    URL_HASH SHA1=45408897f419944fb28d8fd835791f237be2ec19
+  )
+  FetchContent_MakeAvailable(glm)
+
 # Dependencies: we search for config first, then module this helps package managers.
-if(CMAKE_VERSION VERSION_GREATER 3.15 OR CMAKE_VERSION VERSION_EQUAL 3.15)
+elseif(CMAKE_VERSION VERSION_GREATER 3.15 OR CMAKE_VERSION VERSION_EQUAL 3.15)
   set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 
   find_package(spdlog 1.3.0 REQUIRED)
@@ -66,9 +111,6 @@ else()
     find_package(cxxopts MODULE REQUIRED)
   endif()
 endif()
-
-option(OPENBLACK_BUILD_BGFX
-"Build bgfx alongside project (only use for developing bgfx)" OFF)
 
 if(NOT OPENBLACK_BUILD_BGFX)
   find_package(bgfx CONFIG)
