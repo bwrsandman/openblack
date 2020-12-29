@@ -58,8 +58,9 @@ class Script;
 
 namespace entities
 {
+class Map;
 class Registry;
-}
+} // namespace entities
 
 struct Arguments
 {
@@ -154,6 +155,7 @@ public:
 	entities::Registry& GetEntityRegistry() { return *_entityRegistry; }
 	[[nodiscard]] entities::Registry& GetEntityRegistry() const { return *_entityRegistry; }
 	const InfoConstants& GetInfoConstants() { return _infoConstants; } ///< Access should be only read-only
+	[[nodiscard]] const entities::Map& GetEntityMap() const { return *_entityMap; }
 	Config& GetConfig() { return _config; }
 	[[nodiscard]] const Config& GetConfig() const { return _config; }
 	[[nodiscard]] uint16_t GetTurn() const { return _turnCount; }
@@ -189,6 +191,7 @@ private:
 	std::unique_ptr<lhscriptx::Script> _scriptx;
 	std::unique_ptr<LHVM::LHVM> _lhvm;
 	std::unique_ptr<entities::Registry> _entityRegistry;
+	std::unique_ptr<entities::Map> _entityMap;
 
 	InfoConstants _infoConstants;
 	Config _config;
