@@ -49,9 +49,9 @@ if(OPENBLACK_FETCH_DEPENDENCIES)
 # Special case for SDL2 dependency, goal is to find a config that exports SDL2::SDL2 target
 # libsdl2-dev has a `sdl2-config.cmake` that doesn't export this, but vcpkg does..
 else()
-  find_package(SDL2 CONFIG QUIET)
+  find_package(SDL2 2.0.12 CONFIG QUIET)
   if(NOT TARGET SDL2::SDL2)
-    find_package(SDL2 MODULE REQUIRED)
+    find_package(SDL2 2.0.12 MODULE REQUIRED)
   endif()
 endif()
 
@@ -129,8 +129,8 @@ else()
 
   FetchContent_Declare(
     bgfx
-    GIT_REPOSITORY https://github.com/openblack/bgfx.cmake.git
-    GIT_TAG master
+    GIT_REPOSITORY https://github.com/bwrsandman/bgfx.cmake.git
+    GIT_TAG example_common
   )
 
   # don't build anymore targets then what we need

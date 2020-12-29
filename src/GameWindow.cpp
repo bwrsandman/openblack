@@ -13,6 +13,7 @@
 
 #include <SDL_syswm.h>
 #include <spdlog/spdlog.h>
+
 #if defined(SDL_VIDEO_DRIVER_WAYLAND)
 #include <wayland-egl.h>
 #endif // defined(SDL_VIDEO_DRIVER_WAYLAND)
@@ -52,7 +53,7 @@ GameWindow::GameWindow(const std::string& title, int width, int height, DisplayM
 
 	SDL_ShowCursor(SDL_DISABLE);
 
-	uint32_t flags = SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+	uint32_t flags = SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_VULKAN;
 	if (displayMode == DisplayMode::Fullscreen)
 		flags |= SDL_WINDOW_FULLSCREEN;
 	else if (displayMode == DisplayMode::Borderless)
@@ -62,6 +63,12 @@ GameWindow::GameWindow(const std::string& title, int width, int height, DisplayM
 	const int x = SDL_WINDOWPOS_UNDEFINED;
 	const int y = SDL_WINDOWPOS_UNDEFINED;
 
+	SDL_SetHint(SDL_HINT_VIDEO_EXTERNAL_CONTEXT, "1");
+	// flags |= SDL_WINDOW_VULKAN;
+
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+
 	auto window = std::unique_ptr<SDL_Window, SDLDestroyer>(SDL_CreateWindow(title.c_str(), x, y, width, height, flags));
 
 	if (window == nullptr)
@@ -69,6 +76,10 @@ GameWindow::GameWindow(const std::string& title, int width, int height, DisplayM
 		spdlog::error("Failed to create SDL2 window: '{}'", SDL_GetError());
 		throw std::runtime_error("Failed creating SDL2 window: " + std::string(SDL_GetError()));
 	}
+
+	int major, minor;
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
 
 	_window = std::move(window);
 }

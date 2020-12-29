@@ -32,11 +32,16 @@ public class OpenBlackActivity extends SDLActivity {
      * This method is called by SDL before starting the native application thread.
      * It can be overridden to provide the arguments after the application name.
      * The default implementation returns an empty array. It never returns null.
+     *
      * @return arguments for the native application.
      */
     protected String[] getArguments() {
         // TODO(bwrsandman): Add arguments such as renderer and path to game resources
-        return new String [] {
+        return new String[]{
+                "--log-file", "logcat",
+                //"--backend-type", "Vulkan",
+                "--backend-type", "OpenGLES",
+                "-g", "butts",
         };
     }
 
@@ -46,10 +51,11 @@ public class OpenBlackActivity extends SDLActivity {
      * The default implementation returns the defaults. It never returns null.
      * An array returned by a new implementation must at least contain "SDL2".
      * Also keep in mind that the order the libraries are loaded may matter.
+     *
      * @return names of shared libraries to be loaded (e.g. "SDL2", "main").
      */
     protected String[] getLibraries() {
-        return new String[] {
+        return new String[]{
                 "hidapi",
                 "SDL2",
                 // "SDL2_image",
