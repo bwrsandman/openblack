@@ -37,6 +37,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/intersect.hpp>
+#include <spdlog/sinks/android_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 
@@ -67,10 +68,18 @@ Game::Game(Arguments&& args)
     , _turnCount(0)
     , _intersection()
 {
-	if (!args.logFile.empty() && args.logFile != "stdout")
+	if (!args.logFile.empty())
 	{
-		auto logger = spdlog::basic_logger_mt("default_logger", args.logFile);
-		spdlog::set_default_logger(logger);
+		if (args.logFile == "logcat")
+		{
+			auto logger = spdlog::android_logger_mt("default_logger", "spdlog-android");
+			spdlog::set_default_logger(logger);
+		}
+		else if (args.logFile != "stdout")
+		{
+			auto logger = spdlog::basic_logger_mt("default_logger", args.logFile);
+			spdlog::set_default_logger(logger);
+		}
 	}
 	spdlog::set_level(static_cast<spdlog::level::level_enum>(spdlog::level::debug + args.logLevel));
 	sInstance = this;

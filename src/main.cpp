@@ -40,7 +40,7 @@ bool parseOptions(int argc, char** argv, openblack::Arguments& args, int& return
 		("m,window-mode", "Which mode to run window.", cxxopts::value<std::string>()->default_value("windowed"))
 		("b,backend-type", "Which backend to use for rendering.", cxxopts::value<std::string>()->default_value("OpenGL"))
 		("n,num-frames-to-simulate", "Number of frames to simulate before quitting.", cxxopts::value<uint32_t>()->default_value("0"))
-		("l,log-file", "Output file for logs, 'stdout' for terminal output.", cxxopts::value<std::string>()->default_value(defaultLogFile))
+		("l,log-file", "Output file for logs, 'stdout'/'logcat' for terminal output.", cxxopts::value<std::string>()->default_value(defaultLogFile))
 		("L,log-level", "Level of logging.", cxxopts::value<uint32_t>()->default_value("0"))
 	;
 	// clang-format on
