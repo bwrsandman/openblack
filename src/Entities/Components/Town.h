@@ -15,7 +15,7 @@
 #include <unordered_map>
 
 #include <entt/fwd.hpp>
-#include <glm/fwd.hpp>
+#include <glm/vec3.hpp>
 
 #include "Enums.h"
 
@@ -30,12 +30,15 @@ struct Town
 	Tribe tribe;
 	std::unordered_map<std::string, float> beliefs;
 	bool uninhabitable = false;
+
+	glm::vec3 cachedCongregationPosition;
 	std::set<entt::entity> homelessVillagers;
 
 	static std::optional<Town::Id> FindClosest(const glm::vec3& point);
 
 	std::optional<entt::entity> FindAbodeWithSpace() const;
 	void AddHomelessVillager(entt::entity entity);
+	const glm::vec3& GetCongregationPos();
 };
 
 } // namespace openblack::entities::components

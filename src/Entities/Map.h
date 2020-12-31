@@ -11,6 +11,7 @@
 
 #include <array>
 #include <cstdint>
+#include <type_traits>
 #include <unordered_set>
 
 #include <entt/fwd.hpp>
@@ -28,6 +29,7 @@ class Map
 
 public:
 	static glm::u16vec2 GetGridCell(const glm::vec3& pos);
+	static glm::vec3 PointGridCellAdd(const glm::vec3& pos, const glm::u16vec2& cellIncrement);
 
 	const std::unordered_set<entt::entity>& GetFixedInGridCell(const glm::vec3& pos) const;
 	const std::unordered_set<entt::entity>& GetMobileInGridCell(const glm::vec3& pos) const;

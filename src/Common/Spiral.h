@@ -9,14 +9,14 @@
 
 #pragma once
 
-namespace openblack::entities::components
+#include <glm/fwd.hpp>
+
+namespace openblack::utils::spiral
 {
 
-struct Field
-{
-	static constexpr float radius2D = 5.0f;
+const glm::u16vec2& Spiral(int& index, int& subIndex);
+int GetIncrementSpiralSizeFromRadius(float param_1, float param_2);
+void SpiralIncrement(glm::vec3& point, int& index, int& subIndex, float size);
+int GetMapCellSpiralSizeFromRadius(float radius);
 
-	char dummy;
-};
-
-} // namespace openblack::entities::components
+} // namespace openblack::utils::spiral

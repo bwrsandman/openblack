@@ -25,6 +25,17 @@ glm::u16vec2 openblack::entities::Map::GetGridCell(const glm::vec3& pos)
 	return result;
 }
 
+glm::vec3 openblack::entities::Map::PointGridCellAdd(const glm::vec3& pos, const glm::u16vec2& cellIncrement)
+{
+	const glm::u32vec2 shiftedIncrement(cellIncrement.x << 0x10, cellIncrement.y << 0x10);
+	const auto coords = glm::u32vec2(glm::xz(pos) * static_cast<float>(0x1000) / 10.0f) + shiftedIncrement;
+	return {
+	    coords.x * 10.0f / static_cast<float>(0x1000),
+	    pos.y,
+	    coords.y * 10.0f / static_cast<float>(0x1000),
+	};
+}
+
 void openblack::entities::Map::Clear()
 {
 	for (auto& g : _fixedGrid)
