@@ -13,6 +13,7 @@
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <random>
 #include <spdlog/spdlog.h>
 
 #include "3D/Camera.h"
@@ -841,12 +842,15 @@ void FeatureScriptCommands::FireFlySpellRewardProb(const std::string& spell, flo
 void FeatureScriptCommands::CreateNewTownField(int32_t townId, glm::vec3 position, int32_t param_3, float rotation)
 {
 	auto& registry = Game::instance()->GetEntityRegistry();
+	const auto& context = registry.Context();
+	const auto abodeInfo = Abode::GetField(registry.Get<Town>(context.towns.find(townId)->second).tribe);
 	const auto entity = registry.Create();
 
 	registry.Assign<Transform>(entity, position, GetRotation(rotation), GetSize(1000));
 	registry.Assign<Fixed>(entity);
-	registry.Assign<Field>(entity, townId);
-	registry.Assign<Mesh>(entity, MeshPackId::TreeWheat, static_cast<int8_t>(0), static_cast<int8_t>(0));
+	registry.Assign<Field>(entity);
+	auto& abode = registry.Assign<Abode>(entity, static_cast<Abode::Info>(abodeInfo), static_cast<uint32_t>(townId), 0u, 0u);
+	registry.Assign<Mesh>(entity, abodeMeshLookup[abode.type], static_cast<int8_t>(0), static_cast<int8_t>(0));
 }
 
 void FeatureScriptCommands::CreateSpellDispenser(int32_t, glm::vec3 position, const std::string&, const std::string&, float,

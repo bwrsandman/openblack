@@ -14,7 +14,7 @@ namespace openblack::entities::components
 
 struct Field
 {
-	int town;
+	char dummy;
 };
 
 } // namespace openblack::entities::components

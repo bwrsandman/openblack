@@ -17,6 +17,8 @@
 #include <entt/fwd.hpp>
 #include <glm/fwd.hpp>
 
+#include "Enums.h"
+
 namespace openblack::entities::components
 {
 
@@ -186,6 +188,13 @@ struct Abode
 	/// Villager
 	std::set<entt::entity> inhabitants;
 
+	static constexpr Info GetField(Tribe tribe)
+	{
+		constexpr auto base = static_cast<typename std::underlying_type<Info>::type>(Info::CelticField);
+		constexpr auto stride = static_cast<typename std::underlying_type<Info>::type>(Info::AfricanField) - base;
+		constexpr auto tribeBase = static_cast<typename std::underlying_type<Tribe>::type>(Tribe::CELTIC);
+		return static_cast<Info>(base + stride * (static_cast<typename std::underlying_type<Tribe>::type>(tribe) - tribeBase));
+	}
 	static std::optional<Info> GetInfo(const std::string& abodeType);
 	static void Create(uint32_t townId, const glm::vec3& position, const std::string& abodeInfo, const glm::mat4& rotation,
 	                   const glm::vec3& size, uint32_t foodAmount, uint32_t woodAmount, bool planned);

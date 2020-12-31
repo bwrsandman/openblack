@@ -52,6 +52,7 @@ MeshLookup<Abode::Info> openblack::abodeMeshLookup {
     {Abode::Info::NorseTempleX, MeshPackId::BuildingNorse5},
     {Abode::Info::NorseTempleY, MeshPackId::BuildingNorse2A},
     {Abode::Info::NorseWonder, MeshPackId::BuildingNorseWonder},
+    {Abode::Info::NorseField, MeshPackId::TreeWheat},
     // Celtic
     {Abode::Info::CelticTownCentre, MeshPackId::BuildingCelticVillageCentre},
     {Abode::Info::CelticStoragePit, MeshPackId::BuildingCelticStoragePit},
@@ -64,6 +65,7 @@ MeshLookup<Abode::Info> openblack::abodeMeshLookup {
     {Abode::Info::CelticTent, MeshPackId::BuildingCeltic4},
     {Abode::Info::CelticTempleX, MeshPackId::BuildingCeltic5},
     {Abode::Info::CelticWonder, MeshPackId::BuildingCelticWonder},
+    {Abode::Info::CelticField, MeshPackId::TreeWheat},
     // Japanese
     {Abode::Info::JapaneseTownCentre, MeshPackId::BuildingJapaneseVillageCentre},
     {Abode::Info::JapaneseStoragePit, MeshPackId::BuildingJapaneseStoragePit},
@@ -76,6 +78,7 @@ MeshLookup<Abode::Info> openblack::abodeMeshLookup {
     {Abode::Info::JapaneseTent, MeshPackId::BuildingJapanese4},
     {Abode::Info::JapaneseTempleX, MeshPackId::BuildingJapanese5},
     {Abode::Info::JapaneseWonder, MeshPackId::BuildingJapaneseWonder},
+    {Abode::Info::JapaneseField, MeshPackId::TreeWheat},
     // Aztec
     {Abode::Info::AztecTownCentre, MeshPackId::BuildingAztecVillageCentre},
     {Abode::Info::AztecStoragePit, MeshPackId::BuildingAztecStoragePit},
@@ -88,6 +91,7 @@ MeshLookup<Abode::Info> openblack::abodeMeshLookup {
     {Abode::Info::AztecTent, MeshPackId::BuildingAztec4},
     {Abode::Info::AztecTempleX, MeshPackId::BuildingAztec5},
     {Abode::Info::AztecWonder, MeshPackId::BuildingAztecWonder},
+    {Abode::Info::AztecField, MeshPackId::TreeWheat},
     // Tibetan
     {Abode::Info::TibetanTownCentre, MeshPackId::BuildingTibetanVillageCentre},
     {Abode::Info::TibetanStoragePit, MeshPackId::BuildingTibetanStoragePit},
@@ -100,6 +104,7 @@ MeshLookup<Abode::Info> openblack::abodeMeshLookup {
     {Abode::Info::TibetanTent, MeshPackId::BuildingTibetan4},
     {Abode::Info::TibetanTempleX, MeshPackId::BuildingTibetan5},
     {Abode::Info::TibetanWonder, MeshPackId::BuildingTibetanWonder},
+    {Abode::Info::TibetanField, MeshPackId::TreeWheat},
     // Indian
     {Abode::Info::IndianTownCentre, MeshPackId::BuildingAmericanVillageCentre},
     {Abode::Info::IndianStoragePit, MeshPackId::BuildingAmericanStoragePit},
@@ -112,6 +117,7 @@ MeshLookup<Abode::Info> openblack::abodeMeshLookup {
     {Abode::Info::IndianTent, MeshPackId::BuildingAmerican4},
     {Abode::Info::IndianTempleX, MeshPackId::BuildingAmerican5},
     {Abode::Info::IndianWonder, MeshPackId::BuildingAmericanWonder},
+    {Abode::Info::IndianField, MeshPackId::TreeWheat},
     // Greek
     {Abode::Info::GreekTownCentre, MeshPackId::BuildingGreekVillageCentre},
     {Abode::Info::GreekStoragePit, MeshPackId::BuildingGreekStoragePit},
@@ -125,6 +131,7 @@ MeshLookup<Abode::Info> openblack::abodeMeshLookup {
     {Abode::Info::GreekTempleX, MeshPackId::BuildingGreek5},
     {Abode::Info::GreekTempleY, MeshPackId::BuildingGreek5A},
     {Abode::Info::GreekWonder, MeshPackId::BuildingGreekWonder},
+    {Abode::Info::GreekField, MeshPackId::TreeWheat},
 };
 
 using V = Villager;
