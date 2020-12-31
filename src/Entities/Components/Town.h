@@ -17,6 +17,8 @@
 #include <entt/fwd.hpp>
 #include <glm/fwd.hpp>
 
+#include "Enums.h"
+
 namespace openblack::entities::components
 {
 
@@ -25,6 +27,7 @@ struct Town
 	using Id = int;
 
 	Id id;
+	Tribe tribe;
 	std::unordered_map<std::string, float> beliefs;
 	bool uninhabitable = false;
 	std::set<entt::entity> homelessVillagers;

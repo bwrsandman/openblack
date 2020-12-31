@@ -224,15 +224,15 @@ void FeatureScriptCommands::CreatePath(int32_t param_1, int32_t param_2, int32_t
 }
 
 void FeatureScriptCommands::CreateTown(int32_t townId, glm::vec3 position, const std::string& playerOwner,
-                                       [[maybe_unused]] int32_t, const std::string& civilisation)
+                                       [[maybe_unused]] int32_t, const std::string& tribeStr)
 {
-	spdlog::get("scripting")
-	    ->debug(R"(LHScriptX: Creating town {} for "{}" with civilisation "{}".)", townId, playerOwner, civilisation);
+	SPDLOG_LOGGER_DEBUG(spdlog::get("scripting"), R"(LHScriptX: Creating town {} for "{}" with tribe "{}".)", townId,
+	                    playerOwner, tribeStr);
 
 	auto& registry = Game::instance()->GetEntityRegistry();
 	const auto entity = registry.Create();
 
-	registry.Assign<Town>(entity, townId);
+	registry.Assign<Town>(entity, townId, tribeLookup.at(tribeStr));
 	auto& registryContext = registry.Context();
 	registryContext.towns.insert({townId, entity});
 }
