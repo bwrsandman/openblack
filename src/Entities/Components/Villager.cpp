@@ -28,6 +28,11 @@ using namespace openblack::entities::components;
 
 void Villager::Create(const glm::vec3& abodePosition, const glm::vec3& position, Tribe tribe, Role role, uint32_t age)
 {
+	// TODO(bwrsandman): would be nice to have this be a non-static member of
+	//  FeatureScriptCommands or use a singleton
+	thread_local std::default_random_engine generator;
+	thread_local std::uniform_int_distribution<uint16_t> duration_distribution(1, 500);
+
 	const auto& infoConstants = Game::instance()->GetInfoConstants();
 	auto& registry = Game::instance()->GetEntityRegistry();
 	auto& context = registry.Context();
@@ -70,7 +75,7 @@ void Villager::Create(const glm::vec3& abodePosition, const glm::vec3& position,
 	const auto lifeStage = age >= 18 ? Villager::LifeStage::Adult : Villager::LifeStage::Child;
 	const auto sex = (role == Villager::Role::HOUSEWIFE) ? Villager::Sex::FEMALE : Villager::Sex::MALE;
 	const auto task = Villager::Task::IDLE;
-	const auto action = LivingAction {{LivingState::CREATED}, 0};
+	const auto action = LivingAction {{LivingState::CREATED}, duration_distribution(generator), 0};
 	const auto& villager =
 	    registry.Assign<Villager>(entity, health, age, hunger, lifeStage, sex, tribe, role, task, std::move(action));
 	registry.Assign<Mesh>(entity, villagerMeshLookup[villager.GetVillagerType()], static_cast<int8_t>(0),

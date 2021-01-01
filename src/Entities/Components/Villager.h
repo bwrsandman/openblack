@@ -178,6 +178,7 @@ struct Villager
 		};
 
 		std::array<LivingState, static_cast<size_t>(Index::_Count)> states;
+		uint16_t turnsUntilStateChange;
 		uint16_t turnsSinceStateChange;
 	};
 

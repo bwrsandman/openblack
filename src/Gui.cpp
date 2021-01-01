@@ -1009,11 +1009,12 @@ void Gui::ShowVillagerNames(const Game& game)
 			                       "Top State:      {}\n"
 			                       "Final State:    {}\n"
 			                       "Previous State: {}\n"
+			                       "Turns until next state change: {}\n"
 			                       "Turns since last state change: {}",
 			                       LivingStateStrings[static_cast<size_t>(entity.GetState(LivingAction::Index::Top))],
 			                       LivingStateStrings[static_cast<size_t>(entity.GetState(LivingAction::Index::Final))],
 			                       LivingStateStrings[static_cast<size_t>(entity.GetState(LivingAction::Index::Previous))],
-			                       entity.livingAction.turnsSinceStateChange);
+			                       entity.livingAction.turnsUntilStateChange, entity.livingAction.turnsSinceStateChange);
 		}
 
 		std::function<void(void)> debugCallback;
