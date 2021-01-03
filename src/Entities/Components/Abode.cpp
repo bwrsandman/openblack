@@ -214,3 +214,9 @@ glm::vec3 Abode::GetDoorOffset() const
 	auto doorPos = mesh.GetDoorPos();
 	return doorPos.value_or(glm::vec3());
 }
+
+bool Abode::IsFunctional() const
+{
+	// TODO(bwrsandman)
+	return true;
+}

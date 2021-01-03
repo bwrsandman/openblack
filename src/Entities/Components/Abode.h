@@ -192,6 +192,7 @@ struct Abode
 
 	void AddVillager(entt::entity entity);
 	glm::vec3 GetDoorOffset() const;
+	bool IsFunctional() const;
 };
 
 } // namespace openblack::entities::components
