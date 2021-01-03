@@ -198,8 +198,14 @@ struct Villager
 	static bool IsImportantRole(Role role);
 	Type GetVillagerType() const;
 	LivingState GetState(LivingAction::Index index) const;
-	void SetState(LivingAction::Index index, LivingState state);
+	void SetState(LivingAction::Index index, LivingState state, bool skipTransition);
 	std::optional<std::reference_wrapper<const Abode>> GetAbode() const;
 	std::optional<std::reference_wrapper<Town>> GetTown() const;
+
+	uint32_t CallState(LivingAction::Index index);
+	bool CallEntryState(LivingAction::Index index, LivingState src, LivingState dst);
+	bool CallExitState(LivingAction::Index index);
+	int CallOutOfAnimation(LivingAction::Index index);
+	bool CallValidate(LivingAction::Index index);
 };
 } // namespace openblack::entities::components

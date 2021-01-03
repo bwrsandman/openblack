@@ -214,8 +214,15 @@ bool Game::GameLogicLoop()
 	_entityMap->Rebuild();
 
 	// Update Entities
-	registry.Each<Villager>([](Villager& entity) { ++entity.livingAction.turnsSinceStateChange; });
+	registry.Each<Villager>([](Villager& entity) {
+		++entity.livingAction.turnsSinceStateChange;
+		// TODO: process food speedup
 
+		entity.CallValidate(Villager::LivingAction::Index::Top);
+		entity.CallValidate(Villager::LivingAction::Index::Final);
+
+		return entity.CallState(Villager::LivingAction::Index::Top);
+	});
 	_lastGameLoopTime = currentTime;
 	_turnDeltaTime = delta;
 	++_turnCount;
