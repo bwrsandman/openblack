@@ -207,5 +207,8 @@ struct Villager
 	bool CallExitState(LivingAction::Index index);
 	int CallOutOfAnimation(LivingAction::Index index);
 	bool CallValidate(LivingAction::Index index);
+
+	// State functions
+	uint32_t InvalidState();
 };
 } // namespace openblack::entities::components

@@ -94,7 +94,9 @@ static VillagerStateTableEntry TodoEntry = {
 };
 
 std::array<VillagerStateTableEntry, static_cast<size_t>(LivingState::_COUNT)> VillagerStateTable = {
-    /* INVALID_STATE */ TodoEntry,
+    /* INVALID_STATE */ VillagerStateTableEntry {
+        .state = &Villager::InvalidState,
+    },
     /* MOVE_TO_POS */ TodoEntry,
     /* MOVE_TO_OBJECT */ TodoEntry,
     /* MOVE_ON_STRUCTURE */ TodoEntry,
@@ -586,4 +588,11 @@ std::optional<std::reference_wrapper<Town>> Villager::GetTown() const
 	auto& registry = Game::instance()->GetEntityRegistry();
 	auto& component = registry.Get<Town>(town.value());
 	return std::reference_wrapper<Town>(component);
+}
+
+uint32_t Villager::InvalidState()
+{
+	spdlog::error("Villager #{}: Stuck in an invalid state", Game::instance()->GetEntityRegistry().ToEntity(*this));
+	assert(false);
+	return 0;
 }
