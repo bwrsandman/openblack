@@ -181,7 +181,11 @@ std::array<VillagerStateTableEntry, static_cast<size_t>(LivingState::_COUNT)> Vi
     /* FOOTBALL_MATCH_PAUSED */ TodoEntry,
     /* FOOTBALL_WATCH_MATCH */ TodoEntry,
     /* FOOTBALL_MEXICAN_WAVE */ TodoEntry,
-    /* CREATED */ TodoEntry,
+    /* CREATED */
+    VillagerStateTableEntry {
+        .state = &Villager::Created,
+        .field_0x50 = TodoEntry.field_0x50,
+    },
     /* ARRIVES_IN_ABODE_TO_TRADE */ TodoEntry,
     /* ARRIVES_IN_ABODE_TO_PICK_UP_EXCESS */ TodoEntry,
     /* MAKE_SCARED_STIFF */ TodoEntry,
@@ -594,5 +598,18 @@ uint32_t Villager::InvalidState()
 {
 	spdlog::error("Villager #{}: Stuck in an invalid state", Game::instance()->GetEntityRegistry().ToEntity(*this));
 	assert(false);
+	return 0;
+}
+
+uint32_t Villager::Created()
+{
+	if (livingAction.turnsUntilStateChange > 0)
+	{
+		--livingAction.turnsUntilStateChange;
+	}
+	else
+	{
+		SetState(LivingAction::Index::Top, LivingState::DECIDE_WHAT_TO_DO, false);
+	}
 	return 0;
 }

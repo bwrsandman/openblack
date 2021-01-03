@@ -210,5 +210,6 @@ struct Villager
 
 	// State functions
 	uint32_t InvalidState();
+	uint32_t Created();
 };
 } // namespace openblack::entities::components
