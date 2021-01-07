@@ -1,9 +1,13 @@
 #include "FotFile.h"
-#include <Entities/Components/Footpath.h>
+
+#include <glm/gtx/norm.hpp>
 #include <spdlog/spdlog.h>
 
 #include "3D/LandIsland.h"
 #include "Common/FileSystem.h"
+#include "Entities/Components/Fixed.h"
+#include "Entities/Components/Footpath.h"
+#include "Entities/Components/Transform.h"
 #include "Entities/Registry.h"
 #include "Game.h"
 #include "GameThingSerializer.h"

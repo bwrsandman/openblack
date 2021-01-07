@@ -72,12 +72,12 @@ void Town::AddHomelessVillager(entt::entity entity)
 	villager.town = std::make_optional(registry.ToEntity(*this));
 }
 
-std::optional<Town::Id> Town::FindClosest(const glm::vec3& point)
+std::optional<Town::Id> Town::FindClosest(const glm::vec3& point, float maxDistance)
 {
 	const auto& registry = Game::instance()->GetEntityRegistry();
 
 	std::optional<Town::Id> result = std::nullopt;
-	auto closest = std::numeric_limits<float>::infinity();
+	auto closest = maxDistance;
 
 	registry.Each<const Town, const Transform>([&point, &result, &closest](auto town, auto transform) {
 		float distance_2 = glm::dot(point, transform.position);
@@ -151,7 +151,7 @@ bool CheckForClearArea(glm::vec3 point, float radius, std::function<bool(entt::e
 				else
 				{
 					assert(registry.Has<Fixed>(entity) || registry.Has<Mobile>(entity));
-					assert(false); // TODO
+					// assert(false); // TODO
 					const auto& [transform, mesh] = registry.Get<Transform, Mesh>(entity);
 					const auto& l3dMesh = Game::instance()->GetMeshPack().GetMesh(mesh.id);
 					auto submeshId = (l3dMesh.GetNumSubMeshes() + mesh.bbSubmeshId) % l3dMesh.GetNumSubMeshes();
@@ -264,7 +264,7 @@ const glm::vec3& Town::GetCongregationPos()
 	if (useAveragePosition)
 	{
 		// Find centre of these entities
-		glm::vec3 averagePosition;
+		auto averagePosition = glm::zero<glm::vec3>();
 		for (uint32_t i = 0; i < abodeCount; ++i)
 		{
 			auto thing = fieldsAndPlanned[thingIndex];
@@ -322,4 +322,9 @@ const glm::vec3& Town::GetCongregationPos()
 	}
 
 	return cachedCongregationPosition;
+}
+
+std::optional<std::reference_wrapper<const entt::entity>> Town::GetStoragePit() const
+{
+	assert(false);
 }

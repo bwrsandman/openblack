@@ -149,7 +149,7 @@ void Abode::Create(uint32_t townId, const glm::vec3& position, const std::string
 	}
 	else
 	{
-		town = Town::FindClosest(position);
+		town = Town::FindClosest(position, std::numeric_limits<float>::infinity());
 	}
 
 	const auto info = GetInfo(abodeInfo);
@@ -166,6 +166,7 @@ void Abode::Create(uint32_t townId, const glm::vec3& position, const std::string
 
 			registry.Assign<Transform>(entity, position, rotation, size);
 			registry.Assign<Fixed>(entity);
+			registry.Assign<MultiMapFixed>(entity, std::nullopt);
 			const auto& abode =
 			    registry.Assign<Abode>(entity, info.value(), static_cast<int>(town.value()), foodAmount, woodAmount);
 			registry.Assign<Mesh>(entity, abodeMeshLookup[abode.type], static_cast<int8_t>(0), static_cast<int8_t>(0));

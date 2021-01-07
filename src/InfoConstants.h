@@ -16,6 +16,7 @@
 #include <optional>
 
 #include "Entities/Components/Abode.h"
+#include "Entities/Components/Villager.h"
 #include "Enums.h"
 
 namespace openblack
@@ -104,7 +105,8 @@ struct GMobileWallHugInfo: GMobileInfo
 struct GLivingInfo: GMobileWallHugInfo
 {
 	uint32_t field_0x110;
-	uint32_t field_0x114;
+	LivingState moveToPosState;
+	std::array<uint8_t, 3> padding_0x115;
 	float life;
 	float field_0x11c;
 	float field_0x120;
@@ -1826,10 +1828,10 @@ struct InfoConstants
 	std::array<GSpellIconInfo, 2> spellIcon;
 
 private:
-	std::array<GAbodeInfo, 147> abode;
+	std::array<GAbodeInfo, static_cast<size_t>(entities::components::Abode::Info::_COUNT)> abode;
+	std::array<GVillagerInfo, static_cast<size_t>(entities::components::Villager::Info::_COUNT)> villager;
 
 public:
-	std::array<GVillagerInfo, 84> villager;
 	std::array<GSpecialVillagerInfo, 0x30> specialVillager;
 	std::array<GTreeInfo, 23> tree;
 	std::array<GSingleMapFixedInfo, 4> singleMapFixed;
@@ -1907,6 +1909,9 @@ public:
 	std::array<GToolTipsInfo, 170> toolTips;
 
 	std::optional<std::reference_wrapper<const GAbodeInfo>> GetAbodeInfo(entities::components::Abode::Info id) const;
+	std::optional<std::reference_wrapper<const GVillagerInfo>>
+	GetVillagerInfo(const entities::components::Villager::Type& type) const;
+	const GVillagerStateTableInfo& GetVillagerStateInfo(LivingState state) const;
 };
 #pragma pack(pop)
 static_assert(std::is_trivial<InfoConstants>::value, "GInfo must be trivial to be read properly");

@@ -9,12 +9,16 @@
 
 #pragma once
 
+#include <cstdint>
+
+#include <glm/fwd.hpp>
+
 namespace openblack::entities::components
 {
 
 struct Mobile
 {
-	char dummy;
+	uint8_t dummy;
 };
 
 struct MobileStatic
@@ -167,6 +171,20 @@ struct MobileObject
 	};
 
 	Info type;
+};
+
+// TODO(bwrsandman): figure out the function of these
+enum class MoveToState
+{
+	_0x0c = 0x0c,
+};
+
+// TODO(bwrsandman): perhaps this can be merged with mobile
+struct MobileWallHug
+{
+	uint8_t dummy;
+
+	void SetupMobileMoveToPos(const glm::vec3& coords, MoveToState state) const;
 };
 
 } // namespace openblack::entities::components

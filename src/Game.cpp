@@ -9,6 +9,22 @@
 
 #include "Game.h"
 
+#include <cstdint>
+
+#include <string>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/intersect.hpp>
+#include <glm/gtx/norm.hpp>
+#include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/vec_swizzle.hpp>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+
 #include "3D/AnimationPack.h"
 #include "3D/Camera.h"
 #include "3D/L3DAnim.h"
@@ -34,19 +50,7 @@
 #include "Parsers/InfoFile.h"
 #include "Profiler.h"
 #include "Renderer.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/euler_angles.hpp>
-#include <glm/gtx/intersect.hpp>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog.h>
-
-#include <Serializer/FotFile.h>
-#include <cstdint>
-#include <string>
+#include "Serializer/FotFile.h"
 
 #ifdef WIN32
 #include <Windows.h>
@@ -208,6 +212,8 @@ bool Game::GameLogicLoop()
 		return false;
 	}
 
+	spdlog::get("game_logic")->debug("Turn {} start", _turnCount);
+
 	auto& registry = GetEntityRegistry();
 
 	// Build Map Grid Acceleration Structure
@@ -221,8 +227,19 @@ bool Game::GameLogicLoop()
 		entity.CallValidate(Villager::LivingAction::Index::Top);
 		entity.CallValidate(Villager::LivingAction::Index::Final);
 
+		// if ((entity.field_0xe0 & 0x800u) != 0) {
+		//     if (IsReadyForNewAnimation__6LivingFUl(entity, 1) != 0) {
+		//         FinishedIntoOutOfAnimation__8VillagerFv(entity);
+		//     }
+		//     return 1;
+		// } else {
+		//    CheckEveryTime__8VillagerFv(entity);
 		return entity.CallState(Villager::LivingAction::Index::Top);
+		// }
 	});
+
+	spdlog::get("game_logic")->debug("Turn {} end", _turnCount);
+
 	_lastGameLoopTime = currentTime;
 	_turnDeltaTime = delta;
 	++_turnCount;
@@ -494,6 +511,39 @@ void Game::LoadMap(const fs::path& path)
 		SPDLOG_LOGGER_WARN(spdlog::get("game"), "The map at {} does not come with a footpath file. Expected {}",
 		                   path.generic_string(), fot_path.generic_string());
 	}
+
+	// TODO(bwrsandman): the assignment must be done for planned buildings as well
+	//    vanilla has a parallel class hierarchy for planned objects but our entt implementation
+	//    should store the footpath link in the same place
+	_entityRegistry->Each<entities::components::MultiMapFixed, const entities::components::Transform>(
+	    [this](entt::entity entity, auto& fixed, auto& transform) {
+		    // TODO(bwrsandman): should door offset be taken into account?
+		    _entityRegistry->Each<const entities::components::FootpathLink>(
+		        [&fixed, &transform](entt::entity entity, const auto& link) {
+			        if (glm::distance2(glm::xz(link.position), glm::xz(transform.position)) < 0.01f)
+			        {
+				        fixed.footpathLink = static_cast<entities::components::FootpathLink::Id>(entity);
+			        }
+		        });
+	    });
+
+	uint32_t linkedCount = 0;
+	uint32_t abodeCount = 0;
+	_entityRegistry->Each<const entities::components::MultiMapFixed, const entities::components::Transform>(
+	    [this, &linkedCount, &abodeCount](auto& fixed, auto& transform) {
+		    if (fixed.footpathLink.has_value())
+		    {
+			    ++linkedCount;
+			    const auto& link =
+			        _entityRegistry->Get<entities::components::FootpathLink>(static_cast<entt::entity>(*fixed.footpathLink));
+			    spdlog::info("Link {} attached to {} abode (d2={})", glm::to_string(link.position),
+			                 glm::to_string(transform.position),
+			                 glm::distance2(glm::xz(link.position), glm::xz(transform.position)));
+		    }
+		    ++abodeCount;
+	    });
+
+	SPDLOG_LOGGER_INFO(spdlog::get("game"), "Footpaths linked to {}/{} fixed structures", linkedCount, abodeCount);
 
 	_lastGameLoopTime = std::chrono::steady_clock::now();
 	_turnDeltaTime = 0ns;

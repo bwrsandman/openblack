@@ -34,11 +34,12 @@ struct Town
 	glm::vec3 cachedCongregationPosition;
 	std::set<entt::entity> homelessVillagers;
 
-	static std::optional<Town::Id> FindClosest(const glm::vec3& point);
+	static std::optional<Town::Id> FindClosest(const glm::vec3& point, float maxDistance);
 
 	std::optional<entt::entity> FindAbodeWithSpace() const;
 	void AddHomelessVillager(entt::entity entity);
 	const glm::vec3& GetCongregationPos();
+	std::optional<std::reference_wrapper<const entt::entity>> GetStoragePit() const;
 };
 
 } // namespace openblack::entities::components

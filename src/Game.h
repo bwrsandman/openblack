@@ -69,6 +69,7 @@ enum class LoggingSubsystem : uint8_t
 	game,
 	graphics,
 	scripting,
+	ai,
 
 	_count
 };
@@ -77,6 +78,7 @@ static std::array<std::string_view, static_cast<size_t>(LoggingSubsystem::_count
     "game",
     "graphics",
     "scripting",
+    "ai",
 };
 
 struct Arguments
@@ -110,9 +112,9 @@ public:
 		bool waterDebug {false};
 		bool showProfiler {false};
 		bool showLandIsland {false};
-		bool showVillagerNames {false};
-		bool debugVillagerNames {false};
-		bool debugVillagerStates {false};
+		bool showVillagerNames {true};
+		bool debugVillagerNames {true};
+		bool debugVillagerStates {true};
 
 		bool drawSky {true};
 		bool drawWater {true};
@@ -121,7 +123,7 @@ public:
 		bool drawTestModel {true};
 		bool drawDebugCross {true};
 		bool drawBoundingBoxes {false};
-		bool drawFootpaths {false};
+		bool drawFootpaths {true};
 		bool drawStreams {false};
 
 		float timeOfDay {1.0f};
@@ -142,7 +144,7 @@ public:
 	bool Update();
 	bool Run();
 
-	void LoadMap(const fs::path& path);
+	void LoadMap(const fs::path& fixed);
 	void LoadLandscape(const fs::path& path);
 
 	bool LoadVariables();

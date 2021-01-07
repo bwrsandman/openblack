@@ -11,18 +11,23 @@
 
 #include <cassert>
 #include <functional>
+#include <glm/common.hpp>
 #include <random>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <string_view>
 
+#include <glm/gtc/epsilon.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/norm.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include "Abode.h"
 #include "Common/MeshLookup.h"
 #include "Entities/Registry.h"
 #include "Game.h"
 #include "Mesh.h"
+#include "Mobile.h"
 #include "Town.h"
 #include "Transform.h"
 
@@ -33,7 +38,7 @@ struct VillagerStateTableEntry
 {
 	std::function<uint32_t(Villager&)> state;
 	std::function<bool(Villager&, LivingState, LivingState)> entryState;
-	std::function<bool(Villager&)> exitState;
+	std::function<bool(Villager&, LivingState)> exitState;
 	std::function<bool(Villager&)> saveState;
 	std::function<bool(Villager&)> loadState;
 	std::function<bool(Villager&)> field_0x50;
@@ -44,51 +49,58 @@ struct VillagerStateTableEntry
 
 static VillagerStateTableEntry TodoEntry = {
     .state = [](Villager& villager) -> uint32_t {
-	    spdlog::warn("Villager #{}: TODO: Unimplemented state function: {}",
-	                 Game::instance()->GetEntityRegistry().ToEntity(villager),
-	                 LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
+	    spdlog::get("ai")->warn("Villager #{}: TODO: Unimplemented state function: {}",
+	                            Game::instance()->GetEntityRegistry().ToEntity(villager),
+	                            LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
 	    return 0;
     },
     .entryState = [](Villager& villager, LivingState src, LivingState dst) -> bool {
-	    spdlog::warn("Villager #{}: TODO: Unimplemented entry state function ({} -> {})",
-	                 Game::instance()->GetEntityRegistry().ToEntity(villager), LivingStateStrings[static_cast<size_t>(src)],
-	                 LivingStateStrings[static_cast<size_t>(dst)]);
+	    spdlog::get("ai")->warn("Villager #{}: TODO: Unimplemented entry state function ({} -> {})",
+	                            Game::instance()->GetEntityRegistry().ToEntity(villager),
+	                            LivingStateStrings[static_cast<size_t>(src)], LivingStateStrings[static_cast<size_t>(dst)]);
+	    return false;
+    },
+    .exitState = [](Villager& villager, LivingState dst) -> bool {
+	    spdlog::get("ai")->warn("Villager #{}: TODO: Unimplemented exit state function ({} -> {})",
+	                            Game::instance()->GetEntityRegistry().ToEntity(villager),
+	                            LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))],
+	                            LivingStateStrings[static_cast<size_t>(dst)]);
 	    return false;
     },
     .saveState = [](Villager& villager) -> bool {
-	    spdlog::warn("Villager #{}: TODO: Unimplemented save state function: {}",
-	                 Game::instance()->GetEntityRegistry().ToEntity(villager),
-	                 LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
+	    spdlog::get("ai")->warn("Villager #{}: TODO: Unimplemented save state function: {}",
+	                            Game::instance()->GetEntityRegistry().ToEntity(villager),
+	                            LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
 	    return false;
     },
     .loadState = [](Villager& villager) -> bool {
-	    spdlog::warn("Villager #{}: TODO: Unimplemented load state function: {}",
-	                 Game::instance()->GetEntityRegistry().ToEntity(villager),
-	                 LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
+	    spdlog::get("ai")->warn("Villager #{}: TODO: Unimplemented load state function: {}",
+	                            Game::instance()->GetEntityRegistry().ToEntity(villager),
+	                            LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
 	    return false;
     },
     .field_0x50 = [](Villager& villager) -> bool {
-	    spdlog::warn("Villager #{}: TODO: Unimplemented field_0x50 state function: {}",
-	                 Game::instance()->GetEntityRegistry().ToEntity(villager),
-	                 LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
+	    spdlog::get("ai")->warn("Villager #{}: TODO: Unimplemented field_0x50 state function: {}",
+	                            Game::instance()->GetEntityRegistry().ToEntity(villager),
+	                            LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
 	    return false;
     },
     .field_0x60 = [](Villager& villager) -> bool {
-	    spdlog::warn("Villager #{}: TODO: Unimplemented field_0x60 state function: {}",
-	                 Game::instance()->GetEntityRegistry().ToEntity(villager),
-	                 LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
+	    spdlog::get("ai")->warn("Villager #{}: TODO: Unimplemented field_0x60 state function: {}",
+	                            Game::instance()->GetEntityRegistry().ToEntity(villager),
+	                            LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
 	    return false;
     },
     .transitionAnimation = [](Villager& villager) -> bool {
-	    spdlog::warn("Villager #{}: TODO: Unimplemented transition animation function: {}",
-	                 Game::instance()->GetEntityRegistry().ToEntity(villager),
-	                 LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
+	    spdlog::get("ai")->warn("Villager #{}: TODO: Unimplemented transition animation function: {}",
+	                            Game::instance()->GetEntityRegistry().ToEntity(villager),
+	                            LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
 	    return -1;
     },
     .validate = [](Villager& villager) -> bool {
-	    spdlog::warn("Villager #{}: TODO: Unimplemented validate function: {}",
-	                 Game::instance()->GetEntityRegistry().ToEntity(villager),
-	                 LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
+	    spdlog::get("ai")->warn("Villager #{}: TODO: Unimplemented validate function: {}",
+	                            Game::instance()->GetEntityRegistry().ToEntity(villager),
+	                            LivingStateStrings[static_cast<size_t>(villager.GetState(Villager::LivingAction::Index::Top))]);
 	    return false;
     },
 };
@@ -132,7 +144,12 @@ std::array<VillagerStateTableEntry, static_cast<size_t>(LivingState::_COUNT)> Vi
     /* GOTO_STORAGE_PIT_FOR_FOOD */ TodoEntry,
     /* ARRIVES_AT_STORAGE_PIT_FOR_FOOD */ TodoEntry,
     /* ARRIVES_AT_HOME_WITH_FOOD */ TodoEntry,
-    /* GO_HOME */ TodoEntry,
+    /* GO_HOME */
+    VillagerStateTableEntry {
+        .state = &Villager::GoHome,
+        .exitState = &Villager::ExitAtHome,
+        .field_0x50 = TodoEntry.field_0x50,
+    },
     /* ARRIVES_HOME */ TodoEntry,
     /* AT_HOME */ TodoEntry,
     /* ARRIVES_AT_STORAGE_PIT_FOR_BUILDING_MATERIALS */ TodoEntry,
@@ -263,7 +280,11 @@ std::array<VillagerStateTableEntry, static_cast<size_t>(LivingState::_COUNT)> Vi
     /* TURN_TO_FACE_CREATURE_REACTION */ TodoEntry,
     /* WATCH_FLYING_OBJECT_REACTION */ TodoEntry,
     /* POINT_AT_FLYING_OBJECT_REACTION */ TodoEntry,
-    /* DECIDE_WHAT_TO_DO */ TodoEntry,
+    /* DECIDE_WHAT_TO_DO */
+    VillagerStateTableEntry {
+        .state = &Villager::DecideWhatToDo,
+        .field_0x50 = TodoEntry.field_0x50,
+    },
     /* INTERACT_DECIDE_WHAT_TO_DO */ TodoEntry,
     /* EAT_OUTSIDE */ TodoEntry,
     /* RUN_AWAY_FROM_OBJECT_REACTION */ TodoEntry,
@@ -361,7 +382,8 @@ void Villager::Create(const glm::vec3& abodePosition, const glm::vec3& position,
 {
 	// TODO(bwrsandman): would be nice to have this be a non-static member of
 	//  FeatureScriptCommands or use a singleton
-	thread_local std::default_random_engine generator;
+	const auto seed = 0x1000;
+	thread_local std::default_random_engine generator(seed);
 	thread_local std::uniform_int_distribution<uint16_t> duration_distribution(1, 500);
 
 	const auto& infoConstants = Game::instance()->GetInfoConstants();
@@ -401,12 +423,14 @@ void Villager::Create(const glm::vec3& abodePosition, const glm::vec3& position,
 	const auto entity = registry.Create();
 	registry.Assign<Transform>(entity, position, glm::eulerAngleY(glm::radians(180.0f)), glm::vec3(1.0));
 	registry.Assign<Mobile>(entity);
+	registry.Assign<MobileWallHug>(entity);
 	const uint32_t health = 100;
 	const uint32_t hunger = 100;
 	const auto lifeStage = age >= 18 ? Villager::LifeStage::Adult : Villager::LifeStage::Child;
 	const auto sex = (role == Villager::Role::HOUSEWIFE) ? Villager::Sex::FEMALE : Villager::Sex::MALE;
 	const auto task = Villager::Task::IDLE;
-	const auto action = LivingAction {{LivingState::CREATED}, duration_distribution(generator), 0};
+	const auto turnsUntilStateChange = duration_distribution(generator);
+	const auto action = LivingAction {{LivingState::CREATED}, turnsUntilStateChange, 0};
 	const auto& villager =
 	    registry.Assign<Villager>(entity, health, age, hunger, lifeStage, sex, tribe, role, task, std::move(action));
 	registry.Assign<Mesh>(entity, villagerMeshLookup[villager.GetVillagerType()], static_cast<int8_t>(0),
@@ -502,21 +526,21 @@ bool Villager::CallEntryState(LivingAction::Index index, LivingState src, Living
 	const auto& callback = entry.entryState;
 	if (!callback)
 	{
-		return false;
+		return true;
 	}
 	return callback(*this, src, dst);
 }
 
-bool Villager::CallExitState(LivingAction::Index index)
+bool Villager::CallExitState(LivingAction::Index index, LivingState dst)
 {
 	const auto& state = livingAction.states[static_cast<size_t>(index)];
 	const auto& entry = VillagerStateTable[static_cast<size_t>(state)];
 	const auto& callback = entry.exitState;
 	if (!callback)
 	{
-		return false;
+		return true;
 	}
-	return callback(*this);
+	return callback(*this, dst);
 }
 
 int Villager::CallOutOfAnimation(LivingAction::Index index)
@@ -560,12 +584,30 @@ void Villager::SetState(LivingAction::Index index, LivingState state, bool skipT
 				return;
 			}
 
-			if (CallExitState(index))
+			if (CallExitState(index, state))
 			{
 				return;
 			}
 
+			// auto animResult = CallOutOfAnimation(index);
+
 			CallEntryState(index, previousState, state);
+
+			// SetStateSpeed();
+			//
+			// if (animResult != -1)
+			// {
+			// 	SetAnim(animResult, 1);
+			// 	return;
+			// }
+			//
+			// SetStateAnim();
+			//
+			// animResult = CallIntoAnimation(destination)
+			// if (animResult != -1) {
+			//     SetAnim(animResult, 1);
+			//     return;
+			// }
 		}
 	}
 }
@@ -594,11 +636,217 @@ std::optional<std::reference_wrapper<Town>> Villager::GetTown() const
 	return std::reference_wrapper<Town>(component);
 }
 
+std::optional<glm::vec3> Villager::GetChillOutPos()
+{
+	thread_local std::default_random_engine generator;
+	auto angleDistribution = std::uniform_real_distribution<float>(glm::pi<float>() / 4.0f);
+
+	auto town = GetTown();
+	if (!town.has_value())
+	{
+		return std::nullopt;
+	}
+
+	// TODO(bwrsandman): get town chillout radius (town->super.info->field_0x140)
+	float townChillOutRadius = 1.0f;
+	auto radiusDistribution = std::uniform_real_distribution<float>(townChillOutRadius);
+	float randomizedRadius = glm::mix(townChillOutRadius, radiusDistribution(generator), 0.9f);
+
+	const auto& registry = Game::instance()->GetEntityRegistry();
+
+	const auto transform = registry.As<Transform>(*this);
+	const auto& position = transform.position;
+	const auto& congregationPos = town->get().GetCongregationPos();
+
+	// TODO(bwrsandman): get xz angle between two positions
+	float angle = 0.0f;
+	// Add turn up to -22.5 degrees
+	angle += -glm::pi<float>() / 8.0f;
+	// Add random town up to 45 degrees
+	angle += angleDistribution(generator);
+
+	// TODO(bwrsandman): get position from randomizedRadius and angle
+	auto offset = glm::zero<glm::vec3>();
+
+	return std::make_optional<glm::vec3>(congregationPos + offset);
+}
+
+bool Villager::GetTentPos(glm::vec3& position)
+{
+	assert(false);
+}
+
+bool Villager::SetupMoveToWithHug(const glm::vec3& coords, LivingState destinationState)
+{
+	spdlog::get("ai")->debug("Villager #{}: Setting up a move to {} to then switch to {}",
+	                         Game::instance()->GetEntityRegistry().ToEntity(*this), glm::to_string(coords),
+	                         LivingStateStrings[static_cast<size_t>(destinationState)]);
+
+	// TODO(bwrsandman): Info could have been overridden by a superclass in vanilla
+	// TODO(bwrsandman): Info may be better as a component
+	auto info = Game::instance()->GetInfoConstants().GetVillagerInfo(GetVillagerType());
+	if (!info.has_value())
+	{
+		assert(false);
+		return false;
+	}
+	auto currentState = info->get().moveToPosState;
+	if (!CallExitState(LivingAction::Index::Top, destinationState))
+	{
+		spdlog::get("ai")->error("Villager #{}: Unable to setup a move to {}: call to exit from {} into {} state failed",
+		                         Game::instance()->GetEntityRegistry().ToEntity(*this), glm::to_string(coords),
+		                         LivingStateStrings[static_cast<size_t>(currentState)],
+		                         LivingStateStrings[static_cast<size_t>(destinationState)]);
+		return false;
+	}
+
+	// int iVar1 = CallOutofAnimationFunction(destinationState);
+
+	if (CallEntryState(LivingAction::Index::Top, currentState, destinationState))
+	{
+		// SetStateSpeed();
+		// if (iVar1 != 1)
+		// {
+		//     SetAnim(iVar1, 1);
+		// }
+
+		auto& wallHug = Game::instance()->GetEntityRegistry().As<entities::components::MobileWallHug>(*this);
+		wallHug.SetupMobileMoveToPos(coords, MoveToState::_0x0c);
+		return true;
+	}
+
+	spdlog::get("ai")->error("Villager #{}: Unable to setup a move to {}: call to entry from {} into {} state failed",
+	                         Game::instance()->GetEntityRegistry().ToEntity(*this), glm::to_string(coords),
+	                         LivingStateStrings[static_cast<size_t>(currentState)],
+	                         LivingStateStrings[static_cast<size_t>(destinationState)]);
+
+	CallEntryState(LivingAction::Index::Top, currentState, LivingState::DECIDE_WHAT_TO_DO);
+	return false;
+}
+
+bool Villager::SetupMoveToOnFootpath(const Abode& destination, const glm::vec3& coords, LivingState state)
+{
+	const auto& registry = Game::instance()->GetEntityRegistry();
+	const auto& position = registry.As<Transform>(*this).position;
+	if (glm::all(glm::epsilonEqual(position, destination.GetDoorOffset(), glm::epsilon<float>())))
+	{
+		if (glm::all(glm::epsilonEqual(position, coords, glm::epsilon<float>())))
+		{
+			return SetupMoveToWithHug(coords, state);
+		}
+	}
+	return registry.As<Transform>(destination).UseFootpathIfNecessary(*this, coords, state);
+}
+
+bool Villager::SetupMoveOnFootpath(const Footpath& footpath, const glm::vec3& coords, LivingState state)
+{
+	// get current node from *this
+	// remove *this from current node's follower list
+	// update current node based on Transform(this)->position
+	// add *this to new current node
+	// call SetupMobileMoveToPos
+	// call virtual function 0x8dc and if returns true, call 0x8fc and return true
+	assert(false);
+}
+
+uint32_t Villager::DoGoingHome(LivingState state, LivingState homelessState)
+{
+	LivingState newState;
+
+	// TODO: If the villager is dancing, remove from their dance
+
+	const auto home = GetAbode();
+	if (home.has_value())
+	{
+		// TODO: if flag's 3rd (0b100, likely means at home) bit is not set which is often
+		// if ((*(byte *)&this->field_0xe0 & 4) == 0)
+		{
+			if (GetState(LivingAction::Index::Final) != state)
+			{
+				SetupMoveToOnFootpath(home->get(), home->get().GetDoorOffset(), state);
+			}
+			return 1;
+		}
+		newState = LivingState::AT_HOME;
+	}
+	else
+	{
+		if (town.has_value())
+		{
+			const auto& registry = Game::instance()->GetEntityRegistry();
+			const auto position = registry.As<Transform>(*this).position;
+			const auto townPosition = registry.As<Transform>(*town).position;
+			const float distanceThreshold = 100.0f;
+			const auto distance2 = glm::distance2(position, townPosition);
+
+			auto goal = position;
+
+			// TODO use a random service
+			thread_local std::default_random_engine generator;
+
+			if (distance2 > distanceThreshold * distanceThreshold)
+			{
+				homelessState = GetState(LivingAction::Index::Top);
+				auto angleDistribution =
+				    std::uniform_real_distribution<float>(-glm::pi<float>() / 4.0f, glm::pi<float>() / 4.0f);
+				auto radiusDistribution = std::uniform_real_distribution<float>(10.0f, 35.0f);
+				const auto angle =
+				    angleDistribution(generator) + glm::atan(position.x - townPosition.x, position.z - townPosition.z);
+				const auto radius = angleDistribution(generator);
+				goal += glm::vec3(glm::cos(angle) * radius, 0.0f, glm::sin(angle) * radius);
+			}
+			else
+			{
+				auto angleDistribution = std::uniform_real_distribution<float>(glm::pi<float>() * 2.0f);
+				{
+					auto radiusDistribution = std::uniform_real_distribution<float>(2.0f, 10.0f);
+					const auto angle = angleDistribution(generator);
+					const auto radius = angleDistribution(generator);
+					goal += glm::vec3(glm::cos(angle) * radius, 0.0f, glm::sin(angle) * radius);
+				}
+
+				if (!GetTentPos(goal))
+				{
+					homelessState = GetState(LivingAction::Index::Top);
+					auto radiusDistribution = std::uniform_real_distribution<float>(10.0f, 30.0f);
+					const auto angle = angleDistribution(generator);
+					const auto radius = angleDistribution(generator);
+					goal += glm::vec3(glm::cos(angle) * radius, 0.0f, glm::sin(angle) * radius);
+				}
+			}
+			SetupMoveToWithHug(goal, homelessState);
+			return 1;
+		}
+		newState = LivingState::VAGRANT_START;
+	}
+	SetState(LivingAction::Index::Top, newState, false);
+	return 1;
+}
+
+void Villager::LeaveHome()
+{
+	assert(false);
+}
+
 uint32_t Villager::InvalidState()
 {
 	spdlog::error("Villager #{}: Stuck in an invalid state", Game::instance()->GetEntityRegistry().ToEntity(*this));
 	assert(false);
 	return 0;
+}
+
+uint32_t Villager::GoHome()
+{
+	return DoGoingHome(LivingState::ARRIVES_HOME, LivingState::SLEEP_IN_TENT);
+}
+
+bool Villager::ExitAtHome(LivingState dst)
+{
+	if (Game::instance()->GetInfoConstants().GetVillagerStateInfo(dst).field_0xd0)
+	{
+		LeaveHome();
+	}
+	return true;
 }
 
 uint32_t Villager::Created()
@@ -612,4 +860,58 @@ uint32_t Villager::Created()
 		SetState(LivingAction::Index::Top, LivingState::DECIDE_WHAT_TO_DO, false);
 	}
 	return 0;
+}
+
+uint32_t Villager::DecideWhatToDo()
+{
+	// TODO(bwrsandman): Find town of villager and check for emergency -> GOTO_CONGREGATE_IN_TOWN_AFTER_EMERGENCY
+	// TODO(bwrsandman): Check if villager is disciple and use disciple table or unassign disciple
+	// TODO(bwrsandman): Check if villager is child which is a different decision tree
+	// TODO(bwrsandman): Check if needed for something (log this with spdlog::debug)
+	// TODO(bwrsandman): Check if needs resources (log this with spdlog::debug)
+	// else
+	thread_local std::default_random_engine generator;
+	thread_local std::uniform_int_distribution<uint8_t> distributionChoice(0, 9);
+	thread_local std::uniform_int_distribution<uint8_t> distributionGoToNonFunctionHome(0, 100);
+
+	const auto& town = GetTown();
+	const auto& abode = GetAbode();
+
+	const auto choice = distributionChoice(generator);
+	switch (choice)
+	{
+	case 0:
+		if (abode.has_value() && (abode->get().IsFunctional() || distributionGoToNonFunctionHome(generator) < 10))
+		{
+			SetState(LivingAction::Index::Top, LivingState::GO_HOME, false);
+			return 1;
+		}
+		[[fallthrough]];
+	case 1:
+	case 2:
+	case 3:
+		if (abode.has_value())
+		{
+			SetState(LivingAction::Index::Top, LivingState::GO_AND_CHILLOUT_OUTSIDE_HOME, false);
+			return 1;
+		}
+		[[fallthrough]];
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+	case 8:
+	{
+		auto coords = GetChillOutPos();
+		if (coords.has_value())
+		{
+			SetupMoveToWithHug(coords.value(), LivingState::SIT_AND_CHILLOUT);
+			return 1;
+		}
+		[[fallthrough]];
+	}
+	default:
+		SetState(LivingAction::Index::Top, LivingState::GO_HOME, false);
+		return 1;
+	}
 }

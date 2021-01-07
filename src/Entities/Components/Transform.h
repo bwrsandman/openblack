@@ -12,8 +12,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
+#include <Enums.h>
+
 namespace openblack::entities::components
 {
+
+struct Villager;
 
 struct Transform
 {
@@ -21,14 +25,9 @@ struct Transform
 	glm::mat3 rotation;
 	glm::vec3 scale;
 
-	explicit operator glm::mat4() const
-	{
-		glm::mat4 modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::translate(modelMatrix, position);
-		modelMatrix *= glm::mat4(rotation);
-		modelMatrix = glm::scale(modelMatrix, scale);
-		return modelMatrix;
-	}
+	explicit operator glm::mat4() const;
+	// TODO(bwrsandman): Change to Living component after they are added
+	bool UseFootpathIfNecessary(Villager& living, const glm::vec3& coords, LivingState state) const;
 };
 
 } // namespace openblack::entities::components

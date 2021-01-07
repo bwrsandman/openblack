@@ -7,27 +7,12 @@
  * openblack is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#pragma once
+#include "Fixed.h"
 
-#include <optional>
+using namespace openblack;
+using namespace openblack::entities::components;
 
-#include <glm/vec3.hpp>
-
-#include "Footpath.h"
-
-namespace openblack::entities::components
+glm::vec3 MultiMapFixed::GetArrivePos() const
 {
-
-struct Fixed
-{
-	char dummy;
-};
-
-struct MultiMapFixed
-{
-	std::optional<FootpathLink::Id> footpathLink;
-
-	glm::vec3 GetArrivePos() const;
-};
-
-} // namespace openblack::entities::components
+	assert(false);
+}
