@@ -1054,7 +1054,8 @@ void Gui::ShowCameraPositionOverlay(const Game& game)
 		const auto& handPosition = game.GetHandTransform().position;
 		ImGui::Text("Hand Position: (%.1f,%.1f,%.1f)", handPosition.x, handPosition.y, handPosition.z);
 
-		ImGui::Text("Game Turn: %u (%.3f ms)", game.GetTurn(), game.GetDeltaTime().count());
+		ImGui::Text("Game Turn: %u (%.3f ms)%s", game.GetTurn(), game.GetDeltaTime().count(),
+		            game.IsPaused() ? " - paused" : "");
 	}
 	ImGui::End();
 }
