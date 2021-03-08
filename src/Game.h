@@ -95,7 +95,6 @@ public:
 
 		bool wireframe {false};
 		bool waterDebug {false};
-		bool showProfiler {false};
 		bool showLandIsland {false};
 		bool showVillagerNames {false};
 		bool debugVillagerNames {false};
@@ -115,6 +114,7 @@ public:
 		float smallBumpMapStrength {1.0f};
 
 		bool bgfxDebug {false};
+		bool bgfxProfile {false};
 		bool running {false};
 
 		uint32_t numFramesToSimulate {0};

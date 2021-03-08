@@ -26,6 +26,7 @@ class DebugWindow
 {
 public:
 	DebugWindow(std::string name, ImVec2 defaultSize);
+	DebugWindow(const DebugWindow&) = delete;
 	virtual ~DebugWindow();
 
 	void WindowUpdate(Game& game, const Renderer& renderer);
