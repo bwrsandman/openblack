@@ -37,9 +37,9 @@
 #include <Graphics/Shaders/imgui/fs_ocornut_imgui.bin.h>
 #include <Graphics/Shaders/imgui/vs_imgui_image.bin.h>
 #include <Graphics/Shaders/imgui/vs_ocornut_imgui.bin.h>
-#include <LHVMViewer.h>
 
 #include "Console.h"
+#include "LHVMViewer.h"
 #include "LandIsland.h"
 #include "MeshViewer.h"
 #include "Profiler.h"
@@ -75,6 +75,7 @@ std::unique_ptr<Gui> Gui::create(const GameWindow* window, graphics::RenderPass 
 	debugWindows.emplace_back(new MeshViewer);
 	debugWindows.emplace_back(new Console);
 	debugWindows.emplace_back(new LandIsland);
+	debugWindows.emplace_back(new LHVMViewer);
 
 	auto gui = std::unique_ptr<Gui>(new Gui(imgui, static_cast<bgfx::ViewId>(viewId), std::move(debugWindows)));
 
@@ -498,7 +499,6 @@ bool Gui::Loop(Game& game, const Renderer& renderer)
 	}
 	ShowVillagerNames(game);
 	ShowCameraPositionOverlay(game);
-	LHVMViewer::Draw(game.GetLhvm());
 	ShowWaterFramebuffer(game);
 
 	ImGui::Render();

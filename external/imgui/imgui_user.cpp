@@ -35,4 +35,27 @@ bool ListBox(const char* label, int* currIndex, std::vector<std::string>& values
 	return ListBox(label, currIndex, vector_getter, static_cast<void*>(&values), values.size());
 }
 
+void AddUnderLine(ImColor col_)
+{
+	ImVec2 min = ImGui::GetItemRectMin();
+	ImVec2 max = ImGui::GetItemRectMax();
+	min.y = max.y;
+	ImGui::GetWindowDrawList()->AddLine(min, max, col_, 1.0f);
+}
+
+bool TextButtonColored(ImVec4 color, const char* name_)
+{
+	bool pressed = false;
+	ImGui::TextColored(color, "%s", name_);
+	if (ImGui::IsItemHovered())
+	{
+		if (ImGui::IsMouseClicked(0))
+			pressed = true;
+
+		AddUnderLine(color);
+	}
+
+	return pressed;
+}
+
 } // namespace ImGui
