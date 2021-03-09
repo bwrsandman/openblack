@@ -40,6 +40,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/intersect.hpp>
+#include <glm/gtx/vec_swizzle.hpp>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 
@@ -285,7 +286,7 @@ bool Game::Update()
 			if (intersects)
 				_intersection = rayOrigin + rayDirection * intersectDistance;
 
-			_intersection.y = _landIsland->GetHeightAt(glm::vec2(_intersection.x, _intersection.z));
+			_intersection.y = _landIsland->GetHeightAt(glm::xz(_intersection));
 
 			_renderer->UpdateDebugCrossUniforms(_intersection, 50.0f);
 		}

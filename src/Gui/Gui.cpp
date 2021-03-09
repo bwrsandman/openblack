@@ -40,6 +40,7 @@
 #include "LHVMViewer.h"
 #include "LandIsland.h"
 #include "MeshViewer.h"
+#include "PathFinding.h"
 #include "Profiler.h"
 
 using namespace openblack;
@@ -77,6 +78,7 @@ std::unique_ptr<Gui> Gui::create(const GameWindow* window, graphics::RenderPass 
 	debugWindows.emplace_back(new Console);
 	debugWindows.emplace_back(new LandIsland);
 	debugWindows.emplace_back(new LHVMViewer);
+	debugWindows.emplace_back(new PathFinding);
 
 	auto gui = std::unique_ptr<Gui>(new Gui(imgui, static_cast<bgfx::ViewId>(viewId), std::move(debugWindows)));
 
