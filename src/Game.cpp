@@ -202,13 +202,7 @@ bool Game::GameLogicLoop()
 	const auto& registry = GetEntityRegistry();
 
 	// Build Map Grid Acceleration Structure
-	_entityMap->Clear();
-	registry.Each<const Fixed, const Transform>([this](entt::entity entity, const Fixed& fixed, const Transform& transform) {
-		_entityMap->AddFixed(transform.position, entity);
-	});
-	registry.Each<const Mobile, const Transform>([this](entt::entity entity, const Mobile& mobile, const Transform& transform) {
-		_entityMap->AddMobile(transform.position, entity);
-	});
+	_entityMap->Rebuild();
 
 	// TODO: update entities
 
@@ -374,6 +368,9 @@ bool Game::Run()
 
 	// _lhvm = std::make_unique<LHVM::LHVM>();
 	// _lhvm->LoadBinary(GetGamePath() + fileSystem->QuestsPath() / "challenge.chl");
+
+	// Initialize the Acceleration Structure
+	_entityMap->Rebuild();
 
 	if (_window)
 	{

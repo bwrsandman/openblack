@@ -31,7 +31,9 @@ public:
 
 	const std::unordered_set<entt::entity>& GetFixedInGridCell(const glm::vec3& pos) const;
 	const std::unordered_set<entt::entity>& GetMobileInGridCell(const glm::vec3& pos) const;
+	void Rebuild();
 
+private:
 	void Clear();
 	void AddFixed(const glm::vec3& pos, entt::entity fixed);
 	void AddMobile(const glm::vec3& pos, entt::entity mobile);
