@@ -19,9 +19,12 @@
 #include "3D/Water.h"
 #include "Common/EventManager.h"
 #include "Common/FileSystem.h"
+#include "Entities/Components/Fixed.h"
 #include "Entities/Components/Hand.h"
 #include "Entities/Components/Mesh.h"
+#include "Entities/Components/Mobile.h"
 #include "Entities/Components/Transform.h"
+#include "Entities/Map.h"
 #include "Entities/Registry.h"
 #include "GameWindow.h"
 #include "GitSHA1.h"
@@ -61,6 +64,7 @@ Game::Game(Arguments&& args)
     : _eventManager(std::make_unique<EventManager>())
     , _fileSystem(std::make_unique<FileSystem>())
     , _entityRegistry(std::make_unique<entities::Registry>())
+    , _entityMap(std::make_unique<entities::Map>())
     , _config()
     , _gameSpeedMultiplier(1.0f)
     , _frameCount(0)
@@ -186,6 +190,8 @@ bool Game::ProcessEvents(const SDL_Event& event)
 
 bool Game::GameLogicLoop()
 {
+	using namespace entities::components;
+
 	const auto currentTime = std::chrono::steady_clock::now();
 	const auto delta = currentTime - _lastGameLoopTime;
 	if (delta < kTurnDuration * _gameSpeedMultiplier)
@@ -194,6 +200,10 @@ bool Game::GameLogicLoop()
 	}
 
 	const auto& registry = GetEntityRegistry();
+
+	// Build Map Grid Acceleration Structure
+	_entityMap->Rebuild();
+
 	// TODO: update entities
 
 	_lastGameLoopTime = currentTime;
@@ -367,6 +377,9 @@ bool Game::Run()
 		spdlog::error("Challenge file not found at {}", (_fileSystem->GetGamePath() / challengePath).generic_string());
 		return false;
 	}
+
+	// Initialize the Acceleration Structure
+	_entityMap->Rebuild();
 
 	if (_window)
 	{

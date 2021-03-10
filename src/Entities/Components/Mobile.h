@@ -12,6 +12,11 @@
 namespace openblack::entities::components
 {
 
+struct Mobile
+{
+	char dummy;
+};
+
 struct MobileStatic
 {
 	/// Originally MobileStaticInfo
