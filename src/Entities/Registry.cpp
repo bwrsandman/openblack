@@ -115,10 +115,8 @@ void Registry::PrepareDrawUploadUniforms(bool drawBoundingBox)
 		    uint32_t idx = desc->second.offset + offset.first->second;
 		    if (drawBoundingBox)
 		    {
-			    const L3DMesh& l3dMesh = Game::instance()->GetMeshPack().GetMesh(mesh.id);
-			    auto submeshId = (l3dMesh.GetNumSubMeshes() + mesh.bbSubmeshId) % l3dMesh.GetNumSubMeshes();
-			    auto box = l3dMesh.GetSubMeshes()[submeshId]->GetBoundingBox();
-			    auto boxMatrix = static_cast<glm::mat4>(transform) * glm::translate(box.center()) * glm::scale(box.size());
+			    auto box = mesh.GetBoundingBox();
+			    auto boxMatrix = static_cast<glm::mat4>(transform) * glm::translate(box.Center()) * glm::scale(box.Size());
 			    renderCtx.instanceUniforms[idx + renderCtx.instanceUniforms.size() / 2] = boxMatrix;
 		    }
 		    offset.first->second++;

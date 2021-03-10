@@ -9,7 +9,8 @@
 
 #pragma once
 
-#include "Common/MeshLookup.h"
+#include <3D/AxisAlignedBoundingBox.h>
+#include <Common/MeshLookup.h>
 
 namespace openblack::entities::components
 {
@@ -19,6 +20,8 @@ struct Mesh
 	MeshId id;
 	int8_t submeshId;
 	int8_t bbSubmeshId;
+
+	[[nodiscard]] const AxisAlignedBoundingBox& GetBoundingBox() const;
 };
 
 } // namespace openblack::entities::components
