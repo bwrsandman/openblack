@@ -12,6 +12,11 @@
 #include <glm/gtx/vec_swizzle.hpp>
 #include <glm/vec3.hpp>
 
+#include <Entities/Components/Fixed.h>
+#include <Entities/Components/Transform.h>
+#include <Entities/Registry.h>
+#include <Game.h>
+
 glm::u16vec2 openblack::entities::Map::GetGridCell(const glm::vec3& pos)
 {
 	const glm::u32vec2 coords = glm::xz(pos) * static_cast<float>(0x1000) / 10.0f;
@@ -42,6 +47,19 @@ const std::unordered_set<entt::entity>& openblack::entities::Map::GetMobileInGri
 {
 	const auto cellId = GetGridCell(pos);
 	return _mobileGrid[cellId.x + cellId.y * _gridSize.x];
+}
+
+void openblack::entities::Map::Rebuild()
+{
+	using namespace openblack::entities::components;
+
+	auto& registry = Game::instance()->GetEntityRegistry();
+	Clear();
+	registry.Each<const Fixed, const Transform>(
+	    [this](entt::entity entity, const Fixed& fixed, const Transform& transform) { AddFixed(transform.position, entity); });
+	registry.Each<const Mobile, const Transform>([this](entt::entity entity, const Mobile& mobile, const Transform& transform) {
+		AddMobile(transform.position, entity);
+	});
 }
 
 void openblack::entities::Map::AddFixed(const glm::vec3& pos, entt::entity fixed)
