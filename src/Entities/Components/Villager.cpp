@@ -9,10 +9,8 @@
 
 #include "Villager.h"
 
-#include <stdexcept>
-#include <string_view>
-
-#include "Common/MeshLookup.h"
+#include <Common/MeshLookup.h>
+#include <Entities/Components/Footpath.h>
 
 using namespace openblack;
 using openblack::entities::components::Villager;
@@ -60,4 +58,16 @@ Villager::Type Villager::GetVillagerType() const
 	Villager::Type villagerType = {tribe, lifeStage, sex, importantRole};
 
 	return villagerType;
+}
+
+bool Villager::SetupMoveOnFootpath(const Footpath& footpath, const glm::vec3& coords)
+{
+	// TODO(bwrsandman):
+	//   get current node from *this
+	//   remove *this from current node's follower list
+	//   update current node based on Transform(this)->position
+	//   add *this to new current node
+	//   call SetupMobileMoveToPos
+	//   call virtual function 0x8dc and if returns true, call 0x8fc and return true
+	assert(false);
 }

@@ -15,10 +15,14 @@
 #include <string_view>
 #include <tuple>
 
+#include <glm/fwd.hpp>
+
 #include "Enums.h"
 
 namespace openblack::entities::components
 {
+
+struct Footpath;
 
 struct Villager
 {
@@ -165,5 +169,7 @@ struct Villager
 
 	static bool IsImportantRole(Role role);
 	Type GetVillagerType() const;
+
+	bool SetupMoveOnFootpath(const Footpath& footpath, const glm::vec3& coords);
 };
 } // namespace openblack::entities::components

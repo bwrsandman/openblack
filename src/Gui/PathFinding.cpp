@@ -11,6 +11,7 @@
 
 #include <SDL.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/norm.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
 #include <imgui_internal.h>
 
@@ -96,6 +97,43 @@ void PathFinding::Draw(Game& game)
 
 				ImGui::EndTabItem();
 			}
+
+			if (ImGui::BeginTabItem("Move On Footpath"))
+			{
+				ImGui::DragFloat3("Destination", glm::value_ptr(_destination));
+				ImGui::Columns(2);
+				if (_selectedFootpath.has_value())
+				{
+					ImGui::Text("Footpath %u", static_cast<uint32_t>(*_selectedFootpath));
+				}
+				else
+				{
+					ImGui::TextWrapped("No footpath selected, double click near one");
+				}
+				ImGui::NextColumn();
+
+				if (ImGui::Button("Clear Selection"))
+				{
+					_selectedFootpath.reset();
+				}
+				ImGui::NextColumn();
+
+				ImGui::Columns(1);
+
+				ImGui::PushStyleVar(ImGuiStyleVar_Alpha,
+				                    ImGui::GetStyle().Alpha * (_selectedFootpath.has_value() ? 1.0f : 0.5f));
+				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, !_selectedFootpath.has_value());
+				if (ImGui::Button("Execute"))
+				{
+					registry.Get<Villager>(*_selectedVillager)
+					    .SetupMoveOnFootpath(registry.Get<Footpath>(*_selectedFootpath), _destination);
+				}
+				ImGui::PopItemFlag();
+				ImGui::PopStyleVar();
+
+				ImGui::EndTabItem();
+			}
+
 			ImGui::EndTabBar();
 		}
 	}
@@ -116,21 +154,56 @@ void PathFinding::Update(Game& game, const openblack::Renderer& renderer)
 	_handPosition = handTransform.position;
 	_handPosition.y = game.GetLandIsland().GetHeightAt(glm::xz(_handPosition));
 
-	if (_handTo == HandTo::Villager)
+	if (_handTo == HandTo::Entity)
 	{
-		auto& map = game.GetEntityMap();
-		for (const auto& entity : map.GetMobileInGridCell(_handPosition))
+		bool found = false;
+
+		if (!found)
 		{
-			if (registry.Has<Villager>(entity))
+			auto& map = game.GetEntityMap();
+			for (const auto& entity : map.GetMobileInGridCell(_handPosition))
 			{
-				const auto& mesh = registry.Get<Mesh>(entity);
-				const auto& transform = registry.As<Transform>(entity);
-				auto vectorTo = transform.position - _handPosition;
-				if (mesh.GetBoundingBox().Contains(glm::transpose(transform.rotation) * vectorTo))
+				if (registry.Has<Villager>(entity))
 				{
-					_selectedVillager = entity;
+					const auto& mesh = registry.Get<Mesh>(entity);
+					const auto& transform = registry.As<Transform>(entity);
+					auto vectorTo = transform.position - _handPosition;
+					if (mesh.GetBoundingBox().Contains(glm::transpose(transform.rotation) * vectorTo))
+					{
+						_selectedVillager = entity;
+						found = true;
+					}
 				}
 			}
+		}
+
+		if (!found)
+		{
+			registry.Each<Footpath>([this, &found](entt::entity entity, const Footpath& footpath) {
+				if (found)
+				{
+					return;
+				}
+				for (int32_t i = 0; i < static_cast<int32_t>(footpath.nodes.size()) - 1; ++i)
+				{
+					const auto distance2Threshold = 4.0f;
+
+					const auto& p1 = footpath.nodes[i].position;
+					const auto& p2 = footpath.nodes[i + 1].position;
+					const auto p1p2 = p2 - p1;
+
+					const float t2 = glm::dot(_handPosition - p1, p1p2) / glm::length2(p1p2);
+					const auto t = glm::clamp(t2, 0.0f, 1.0f);
+					const auto proj = p1 + t * p1p2;
+
+					if (glm::distance2(_handPosition, proj) < distance2Threshold)
+					{
+						_selectedFootpath = entity;
+						found = true;
+						return;
+					}
+				}
+			});
 		}
 	}
 	else if (_handTo == HandTo::Destination)
@@ -151,7 +224,7 @@ void PathFinding::ProcessEventOpen(const SDL_Event& event)
 		{
 			if (event.button.button == SDL_BUTTON_LEFT && event.button.clicks == 2)
 			{
-				_handTo = HandTo::Villager;
+				_handTo = HandTo::Entity;
 			}
 			else if (event.button.button == SDL_BUTTON_RIGHT)
 			{
