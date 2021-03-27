@@ -9,6 +9,14 @@
 
 #pragma once
 
+#include <cstdint>
+#include <optional>
+#include <set>
+#include <string>
+
+#include <entt/fwd.hpp>
+#include <glm/fwd.hpp>
+
 namespace openblack::entities::components
 {
 
@@ -170,11 +178,20 @@ struct Abode
 	};
 
 	Info type;
-	uint32_t townId;
+	int townId;
 	// If a village does not have a ABODE_STORAGE_PIT then other abodes are used
 	// by the villagers
 	uint32_t foodAmount;
 	uint32_t woodAmount;
+	/// Villager
+	std::set<entt::entity> inhabitants;
+
+	static std::optional<Info> GetInfo(const std::string& abodeType);
+	static void Create(uint32_t townId, const glm::vec3& position, const std::string& abodeInfo, const glm::mat4& rotation,
+	                   const glm::vec3& size, uint32_t foodAmount, uint32_t woodAmount, bool planned);
+
+	void AddVillager(entt::entity entity);
+	glm::vec3 GetDoorOffset() const;
 };
 
 } // namespace openblack::entities::components

@@ -11,14 +11,21 @@
 
 #include <array>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <tuple>
+
+#include <entt/fwd.hpp>
+#include <glm/fwd.hpp>
 
 #include "Enums.h"
 
 namespace openblack::entities::components
 {
+
+struct Abode;
+struct Town;
 
 struct Villager
 {
@@ -162,8 +169,13 @@ struct Villager
 	Tribe tribe;
 	Role role;
 	Task task;
+	std::optional<entt::entity> town;
+	std::optional<entt::entity> abode;
 
+	static void Create(const glm::vec3& abodePosition, const glm::vec3& position, Tribe tribe, Role role, uint32_t age);
 	static bool IsImportantRole(Role role);
 	Type GetVillagerType() const;
+	std::optional<std::reference_wrapper<const Abode>> GetAbode() const;
+	std::optional<std::reference_wrapper<Town>> GetTown() const;
 };
 } // namespace openblack::entities::components
