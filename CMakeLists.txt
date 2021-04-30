@@ -74,7 +74,7 @@ else()
 endif()
 
 option(OPENBLACK_USE_BUNDLED_BGFX
-  "Build and use the bundled bgfx.cmake submodule" ON)
+    "Build and use the bundled bgfx.cmake submodule" OFF)
 
 if (OPENBLACK_USE_BUNDLED_BGFX)
   # don't build anymore targets then what we need
