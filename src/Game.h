@@ -121,8 +121,8 @@ public:
 		Config() {}
 
 		bool wireframe {false};
-		bool showVillagerNames {false};
-		bool debugVillagerNames {false};
+		bool showVillagerNames {true};
+		bool debugVillagerNames {true};
 		bool debugVillagerStates {false};
 
 		bool drawSky {true};
@@ -257,5 +257,6 @@ private:
 
 	entt::entity _handEntity;
 	bool _handGripping;
+	bool _resetVillager;
 };
 } // namespace openblack

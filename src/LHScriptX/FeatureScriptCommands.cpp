@@ -562,7 +562,7 @@ void FeatureScriptCommands::CreateArea([[maybe_unused]] glm::vec3 position, floa
 void FeatureScriptCommands::StartCameraPos(glm::vec3 position)
 {
 	auto& camera = Game::instance()->GetCamera();
-	const glm::vec3 offset(0.0f, 10.0f, 0.0f);
+	const glm::vec3 offset(0.0f, 50.0f, 0.0f);
 	camera.SetPosition(position + offset);
 }
 

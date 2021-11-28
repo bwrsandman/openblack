@@ -51,9 +51,12 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include <ECS/Components/Villager.h>
+#include <ECS/Components/WallHug.h>
 #include <LHVM/LHVM.h>
 #include <Serializer/FotFile.h>
 #include <cstdint>
+#include <glm/gtx/vec_swizzle.hpp>
 #include <string>
 
 #ifdef WIN32
@@ -76,11 +79,12 @@ Game::Game(Arguments&& args)
     , _entityRegistry(std::make_unique<ecs::Registry>())
     , _entityMap(std::make_unique<ecs::Map>())
     , _config()
-    , _gameSpeedMultiplier(1.0f)
+    , _gameSpeedMultiplier(0.1f)
     , _frameCount(0)
     , _turnCount(0)
     , _paused(true)
     , _handPose()
+    , _resetVillager(false)
 {
 	std::function<std::shared_ptr<spdlog::logger>(const std::string&)> CreateLogger;
 #ifdef __ANDROID__
@@ -141,6 +145,13 @@ Game::Game(Arguments&& args)
 		{
 			this->_camera->ProcessSDLEvent(event);
 			this->_config.running = this->ProcessEvents(event);
+			if (event.type == SDL_KEYDOWN)
+			{
+				if (event.key.keysym.scancode == SDL_SCANCODE_G)
+				{
+					this->_resetVillager = true;
+				}
+			}
 		}
 	}));
 }
@@ -266,6 +277,23 @@ bool Game::GameLogicLoop()
 	using namespace ecs::components;
 	using namespace ecs::systems;
 
+	if (_resetVillager)
+	{
+		entt::entity entity = GetEntityRegistry().Front<const Villager>();
+		auto& transform = GetEntityRegistry().Get<Transform>(entity);
+		transform.position.x = 2185.719970703125;
+		transform.position.z = 2315.780029296875;
+		auto& wallHug = GetEntityRegistry().Get<WallHug>(entity);
+		GetEntityRegistry().Remove<MoveStateLinearTag>(entity);
+		GetEntityRegistry().Assign<MoveStateLinearTag>(entity);
+		wallHug.speed = 0.701904296875;
+		wallHug.step.x = 0.36376953125;
+		wallHug.step.y = 0.5987548828125;
+		wallHug.goal.x = 2218.07958984375;
+		wallHug.goal.y = 2368.623779296875;
+		_resetVillager = false;
+	}
+
 	const auto currentTime = std::chrono::steady_clock::now();
 	const auto delta = currentTime - _lastGameLoopTime;
 	if (_paused || delta < kTurnDuration * _gameSpeedMultiplier)
@@ -279,6 +307,9 @@ bool Game::GameLogicLoop()
 	{
 		auto pathfinding = _profiler->BeginScoped(Profiler::Stage::PathfindingUpdate);
 		PathfindingSystem::instance().Update();
+		GetEntityRegistry().Each<const WallHug, Transform>([this](const WallHug&, Transform& transform) {
+			transform.position.y = GetLandIsland().GetHeightAt(glm::xz(transform.position));
+		});
 	}
 	{
 		auto actions = _profiler->BeginScoped(Profiler::Stage::LivingActionUpdate);
@@ -565,7 +596,7 @@ bool Game::Initialize()
 
 bool Game::Run()
 {
-	LoadMap(_fileSystem->ScriptsPath() / "Land1.txt");
+	LoadMap("../../../test/mobile_wall_hug/scenarios/mobilewallhug2.txt");
 	_dynamicsSystem->RegisterRigidBodies();
 
 	auto challengePath = _fileSystem->QuestsPath() / "challenge.chl";
