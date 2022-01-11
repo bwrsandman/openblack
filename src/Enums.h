@@ -133,7 +133,7 @@ enum class AbodeType
 	Any = 32767,
 };
 
-enum class LivingType
+enum class LivingType : int
 {
 	Any = -1,
 	Lion = 0,
@@ -1003,7 +1003,7 @@ enum class EffectType
 	BeliefModification = 6,
 };
 
-enum class LivingStates
+enum class LivingStates : uint32_t
 {
 	LivingInvalid = 0,
 	LivingMoveToPos = 1,
@@ -2975,5 +2975,32 @@ enum class HelpSystemMessageSet : uint32_t
 enum class HelpSystemCondition : uint32_t
 {
 };
+
+enum class SpeedGroup : uint32_t
+{
+	MetresSec_0 = 0,
+	MetresSec_0_1 = 66,
+	MetresSec_0_25 = 164,
+	MetresSec_0_5 = 328,
+	MetresSec_0_75 = 492,
+	MetresSec_1 = 655,
+	MetresSec_1_25 = 819,
+	MetresSec_1_5 = 983,
+	MetresSec_1_75 = 1147,
+	MetresSec_2 = 1311,
+	MetresSec_2_25 = 1475,
+	MetresSec_2_5 = 1638,
+	MetresSec_2_75 = 1802,
+	MetresSec_3 = 1966,
+	MetresSec_4 = 2621,
+	MetresSec_5 = 3277,
+	MetresSec_6 = 3932,
+	MetresSec_6_5 = 4260,
+	MetresSec_7 = 4588,
+	MetresSec_8 = 5243,
+	MetresSec_9 = 5898,
+	MetresSec_10 = 6554,
+	MetresSec_100 = 65536,
+}
 
 } // namespace openblack
