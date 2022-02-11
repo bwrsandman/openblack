@@ -14,6 +14,7 @@
 #include <entt/entity/entity.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/norm.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
 #include <spdlog/spdlog.h>
 
@@ -199,12 +200,34 @@ bool OrbitScanForObstacle(entt::entity entity, bool clockwise, Transform& transf
 
 	const bool closeEnough = glm::distance2(wallHug.goal, obstacleFixed.boundingCenter) <
 	                         obstacleFixed.boundingRadius * obstacleFixed.boundingRadius;
+	// intersect = [IntersectIntervalCircle(clockwise, circleToVillager), IntersectIntervalCircle(clockwise, circleToVillager)]
 	if (closeEnough)
 	{
 		throw std::runtime_error("TODO: CircleSquareSweep");
+		// point = self.goal - circle_hug_position
+		// if point.is_zero():
+		//     point = wall_hug_to_villager
+		// else:
+		//     point = point.rotated(numpy.radians(numpy.float32(0.1) if clockwise else numpy.float32(-0.1)))
+		// intersect[0].compares[0].point = point
+		// intersect[0].compares[1].point = point
+		// intersect[0].compares[1].resolve()
+		// intersect[0].compares[0].result = intersect[0].compares[1].result
+		// intersect[0].obj = None
+		// intersect[0].difference_distance_fraction_hug_diameter_sqr = numpy.float32(1.0)
+		// compare = copy.deepcopy(intersect[0].compares[1])
 	}
 	else
 	{
+		//  # 1764
+		// iterator = intersect[0].intersect_iterator(iterator, self.circle_hug_info.obj.radius,
+		//                                            circle_hug_position, dest)
+		// # 259
+		// if iterator.obj is not None:
+		//     iterator = iterator.iterate(self.circle_hug_info.obj, dest=dest)
+		// elif iterator.collide_obj is not None:
+		//     iterator = ObjectCircleIterator(point=dest, direction=iterator.direction.next())
+		// FIXME(bwrsandman): This gets first, not closest
 		for (const auto& c : GetNeighboringCells(glm::xz(transform.position)))
 		{ // TODO(bwrsandman): Skip if out of bounds or in water
 			const auto& e = map.GetFixedInGridCell(c);
@@ -304,7 +327,64 @@ bool OrbitScanForObstacle(entt::entity entity, bool clockwise, Transform& transf
 				}
 			}
 		}
+		// throw std::runtime_error("TODO: CircleSquareSweep");
 	}
+	// while iterator.obj is not None or iterator.collide_obj is not None:
+	//     iterator = intersect[1].intersect_iterator(iterator, self.circle_hug_info.obj.radius,
+	//                                                circle_hug_position, dest)
+	//     if iterator.obj is None and iterator.collide_obj is None:
+	//         break
+	//
+	//     if intersect[1] < intersect[0]:
+	//         intersect = intersect[1], intersect[0]
+	//
+	// # LAB_00616408
+	// if intersect[0].difference_distance_fraction_hug_diameter_sqr > 0.0:
+	//     intersect[0].resolve()
+	//
+	//     if close_enough:
+	//         point_1 = intersect[0].resolve_mul_2(intersect[0].compares[1].point)
+	//         point_2 = intersect[0].resolve_mul_2(point_1)
+	//         result = LHPoint2D.cross(point_2, wall_hug_to_villager) <= 0.0
+	//         compare_2 = Point2DCompare(point_2, result, clockwise, wall_hug_to_villager)
+	//
+	//         if compare < compare_2:
+	//             intersect[0].compares = (compare, intersect[0].compares[1])
+	//             intersect[0].obj = None
+	//
+	//     intersect[0].compares[1].point.normalize()
+	//     dp = LHPoint2D.dot(intersect[0].compares[1].point, wall_hug_to_villager)
+	//     angle = numpy.arccos(dp)
+	//     if (LHPoint2D.cross(intersect[0].compares[1].point, wall_hug_to_villager) > 0.0) != clockwise:
+	//         angle = numpy.float32(2.0 * numpy.pi) - angle
+	//     # angle += 0.65
+	//
+	//     print(angle)
+	//     num_turns = 2 / 3 * angle * self.circle_hug_info.obj.radius / self.speed
+	//     print(num_turns)
+	//     # Point2D_00d3ee60 = intersect[0].compares[1].point * self.circle_hug_info.obj.radius
+	//
+	//     if num_turns < 1.0:
+	//         if intersect[0].obj is None:
+	//             self.init_steps_xz()
+	//             # self.field_0x78 = 0x10
+	//             self.circle_hug_info.reset(self)
+	//             self.move_state = MoveState.STEP_THROUGH
+	//         else:
+	//             self.circle_hug_info.set_object_ptr(intersect[0].obj, self, False)
+	//             result = self.move_to_circle_hug_circle_square_sweep(dest, clockwise)
+	//
+	//         return result
+	//
+	//     elif num_turns < 4.0:
+	//         self.circle_hug_info.turns_to_obj = 0
+	//     elif num_turns < 255.0:
+	//         self.circle_hug_info.turns_to_obj = int(num_turns)
+	//     else:
+	//         self.circle_hug_info.turns_to_obj = 0xff
+	//
+	// else:
+	//     self.circle_hug_info.turns_to_obj = 0xff
 
 	InitializeStepAroundObstacle(transform, wallHug, obstacleFixed, numCirclesAway, clockwise);
 

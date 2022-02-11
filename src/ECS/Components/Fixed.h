@@ -14,6 +14,7 @@
 namespace openblack::ecs::components
 {
 
+// TODO(bwrsandman): Rename to wallhug obstacle for bounding circle?
 struct Fixed
 {
 	Fixed(const glm::vec2& boundingCenter, float boundingRadius)

@@ -88,6 +88,7 @@ void Map::Build()
 	auto& registry = Game::instance()->GetEntityRegistry();
 	registry.Each<const Fixed, const Transform>([this](entt::entity entity, const Fixed& fixed, const Transform& transform) {
 		// TODO(bwrsandman): This is only in the case of a square bb underling the bounding circle (x/z) <= 1.4
+		// const float radius = sqrtf(2 * fixed.boundingRadius * fixed.boundingRadius) * glm::compMax(transform.scale) + 1.0f;
 		const float radius = fixed.boundingRadius * glm::compMax(transform.scale) + 1.0f;
 		const auto min = GetGridCell(fixed.boundingCenter - radius);
 		const auto max = GetGridCell(fixed.boundingCenter + radius);
