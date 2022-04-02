@@ -40,6 +40,12 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/transform.hpp>
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <unknwn.h>
+#define XR_USE_PLATFORM_WIN32
+#include <openxr/openxr_platform.h>
+#include <openxr/openxr.hpp>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
@@ -370,8 +376,180 @@ bool Game::Update()
 	return _config.numFramesToSimulate == 0 || _frameCount < _config.numFramesToSimulate;
 }
 
+XrBool32 xrDebugCallback(XrDebugUtilsMessageSeverityFlagsEXT messageSeverity, XrDebugUtilsMessageTypeFlagsEXT messageTypes,
+                         const XrDebugUtilsMessengerCallbackDataEXT* callbackData, void* userData)
+{
+	SPDLOG_LOGGER_DEBUG(spdlog::get("game"), "{}: {}", callbackData->functionName, callbackData->message);
+    return XR_TRUE;
+}
+
 bool Game::Run()
 {
+	// xrEnumerate*() functions are usually called once with CapacityInput = 0.
+	// The function will write the required amount into CountOutput. We then have
+	// to allocate an array to hold CountOutput elements and call the function
+	// with CountOutput as CapacityInput.
+	uint32_t ext_count = 0;
+	auto result = xr::enumerateInstanceExtensionProperties(nullptr, 0, &ext_count, nullptr);
+	if (result == XR_ERROR_RUNTIME_UNAVAILABLE)
+	{
+		throw std::runtime_error("No XR runtime Available");
+	}
+	else if (result != XR_SUCCESS)
+	{
+		throw std::runtime_error("Failed to enumerate xr instances");
+	}
+	else if (ext_count == 0)
+	{
+		throw std::runtime_error("No XR runtime Available");
+	}
+	std::vector<xr::ExtensionProperties> exts;
+	exts.resize(ext_count);
+	result = xr::enumerateInstanceExtensionProperties(nullptr, static_cast<uint32_t>(exts.size()), &ext_count,
+	                                                  reinterpret_cast<XrExtensionProperties*>(exts.data()));
+	if (result == XR_ERROR_RUNTIME_UNAVAILABLE)
+	{
+		throw std::runtime_error("No XR runtime Available");
+	}
+	else if (result != XR_SUCCESS)
+	{
+		throw std::runtime_error("Failed to enumerate xr instances");
+	}
+	std::unordered_map<std::string, xr::ExtensionProperties> discoveredExtensions;
+	for (const auto& ext : exts)
+	{
+		SPDLOG_LOGGER_INFO(spdlog::get("game"), "XR Extension found: {}", ext.extensionName);
+		discoveredExtensions.insert({ext.extensionName, ext});
+	}
+
+	bool enableDebug = true;
+	std::vector<const char*> requestedExtensions;
+	if (0 == discoveredExtensions.count(XR_KHR_OPENGL_ENABLE_EXTENSION_NAME))
+	{
+		throw std::runtime_error(
+		    fmt::format("Required Graphics API extension not available: {}", XR_KHR_OPENGL_ENABLE_EXTENSION_NAME));
+	}
+	requestedExtensions.push_back(XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
+
+	if (enableDebug)
+	{
+		requestedExtensions.push_back(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	}
+
+	// Create the actual instance
+	xr::InstanceCreateInfo ici {
+	    {},
+	    {"openblack", 0, "bgfx", BGFX_API_VERSION, xr::Version::current()},
+	    0,
+	    nullptr,
+	    (uint32_t)requestedExtensions.size(),
+	    requestedExtensions.data(),
+	};
+
+	xr::DebugUtilsMessengerCreateInfoEXT dumci;
+	if (enableDebug)
+	{
+		dumci.messageSeverities = xr::DebugUtilsMessageSeverityFlagBitsEXT::AllBits;
+		dumci.messageTypes = xr::DebugUtilsMessageTypeFlagBitsEXT::AllBits;
+		dumci.userData = this;
+		dumci.userCallback = &xrDebugCallback;
+		ici.next = &dumci;
+	}
+
+	xr::Instance instance = xr::createInstance(ici);
+
+	/*// Turn on debug logging
+	xrs::DebugUtilsEXT::Messenger messenger;
+	if (enableDebug) {
+		messenger = xrs::DebugUtilsEXT::create(instance);
+	}*/
+
+	// Having created the isntance, the very first thing to do is populate the dynamic dispatch, loading
+	// all the available functions from the runtime
+	xr::DispatchLoaderDynamic dispatch = xr::DispatchLoaderDynamic::createFullyPopulated(instance, &xrGetInstanceProcAddr);
+
+	// Log the instance properties
+	xr::InstanceProperties instanceProperties = instance.getInstanceProperties();
+	SPDLOG_LOGGER_INFO(spdlog::get("game"), "OpenXR Runtime {} version {}.{}.{}",  //
+				(const char*)instanceProperties.runtimeName, instanceProperties.runtimeVersion.major(),
+				instanceProperties.runtimeVersion.minor(), instanceProperties.runtimeVersion.patch());
+
+
+	// We want to create an HMD example, so we ask for a runtime that supposts that form factor
+	// and get a response in the form of a systemId
+	xr::SystemId systemId = instance.getSystem(xr::SystemGetInfo{ xr::FormFactor::HeadMountedDisplay });
+
+	// Log the system properties
+	{
+		xr::SystemProperties systemProperties = instance.getSystemProperties(systemId);
+		SPDLOG_LOGGER_INFO(spdlog::get("game"), "OpenXR System {} max layers {} max swapchain image size {}x{}",  //
+					(const char*)systemProperties.systemName, (uint32_t)systemProperties.graphicsProperties.maxLayerCount,
+					(uint32_t)systemProperties.graphicsProperties.maxSwapchainImageWidth,
+					(uint32_t)systemProperties.graphicsProperties.maxSwapchainImageHeight);
+	}
+
+	// Find out what view configurations we have available
+	{
+		uint32_t viewConfigCount = 0;
+		result = instance.enumerateViewConfigurations(systemId, 0, &viewConfigCount, nullptr);
+		if (result != XR_SUCCESS || viewConfigCount == 0)
+		{
+			throw std::runtime_error("Failed to enumerate view configurations");
+		}
+		std::vector<xr::ViewConfigurationType> viewConfigTypes;
+		viewConfigTypes.resize(viewConfigCount);
+		result = instance.enumerateViewConfigurations(systemId, static_cast<uint32_t>(viewConfigTypes.size()), &viewConfigCount, reinterpret_cast<XrViewConfigurationType*>(viewConfigTypes.data()));
+		if (result != XR_SUCCESS || viewConfigCount == 0)
+		{
+			throw std::runtime_error("Failed to enumerate view configurations");
+		}
+
+		auto viewConfigType = viewConfigTypes[0];
+		if (viewConfigType != xr::ViewConfigurationType::PrimaryStereo) {
+			throw std::runtime_error("Example only supports stereo-based HMD rendering");
+		}
+		//xr::ViewConfigurationProperties viewConfigProperties =
+		//    instance.getViewConfigurationProperties(systemId, viewConfigType);
+		//logging::log(logging::Level::Info, fmt::format(""));
+	}
+
+	uint32_t viewConfigViewCount = 0;
+	result = instance.enumerateViewConfigurationViews(systemId, xr::ViewConfigurationType::PrimaryStereo, 0, &viewConfigViewCount, nullptr);
+	if (result != XR_SUCCESS || viewConfigViewCount == 0)
+	{
+		throw std::runtime_error("Failed to enumerate view configurations");
+	}
+
+	std::vector<xr::ViewConfigurationView> viewConfigViews;
+	viewConfigViews.resize(viewConfigViewCount);
+
+	result = instance.enumerateViewConfigurationViews(systemId, xr::ViewConfigurationType::PrimaryStereo, static_cast<uint32_t>(viewConfigViews.size()), &viewConfigViewCount, reinterpret_cast<XrViewConfigurationView*>(viewConfigViews.data()));
+	if (result != XR_SUCCESS || viewConfigViewCount == 0)
+	{
+		throw std::runtime_error("Failed to enumerate view configurations");
+	}
+
+	// Instead of createing a swapchain per-eye, we create a single swapchain of double width.
+	// Even preferable would be to create a swapchain texture array with one layer per eye, so that we could use the
+	// VK_KHR_multiview to render both eyes with a single set of draws, but sadly the Oculus runtime doesn't currently
+	// support texture array swapchains
+	if (viewConfigViews.size() != 2) {
+		throw std::runtime_error("Unexpected number of view configurations");
+	}
+
+	if (viewConfigViews[0].recommendedImageRectHeight != viewConfigViews[1].recommendedImageRectHeight) {
+		throw std::runtime_error("Per-eye images have different recommended heights");
+	}
+
+	glm::uvec2 renderTargetSize = { viewConfigViews[0].recommendedImageRectWidth * 2, viewConfigViews[0].recommendedImageRectHeight };
+
+	xr::GraphicsRequirementsOpenGLKHR graphicsRequirements = instance.getOpenGLGraphicsRequirementsKHR(systemId, dispatch);
+
+	xr::GraphicsBindingOpenGLWin32KHR graphicsBinding{ wglGetCurrentDC(), wglGetCurrentContext() };
+	xr::SessionCreateInfo sci{ {}, systemId };
+	sci.next = &graphicsBinding;
+	xr::Session session = instance.createSession(sci);
+
 	// Create profiler
 	_profiler = std::make_unique<Profiler>();
 
@@ -466,8 +644,49 @@ bool Game::Run()
 
 	_frameCount = 0;
 	auto last_time = std::chrono::high_resolution_clock::now();
+	bool quit = false;
 	while (Update())
 	{
+        while (true) {
+            xr::EventDataBuffer eventBuffer;
+            auto pollResult = instance.pollEvent(eventBuffer);
+            if (pollResult == xr::Result::EventUnavailable) {
+                break;
+            }
+
+			xr::SessionState sessionState{ xr::SessionState::Idle };
+            switch (eventBuffer.type) {
+                case xr::StructureType::EventDataSessionStateChanged:
+				{
+					sessionState = reinterpret_cast<xr::EventDataSessionStateChanged&>(eventBuffer).state;
+					switch (sessionState) {
+						case xr::SessionState::Ready:
+							if (!quit) {
+								session.beginSession(xr::SessionBeginInfo{ xr::ViewConfigurationType::PrimaryStereo });
+							}
+							break;
+
+						case xr::SessionState::Stopping:
+							session.endSession();
+							quit = true;
+							break;
+
+						default:
+							break;
+					}
+				}
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+		if (quit)
+		{
+			exit(1);
+		}
+
 		auto duration = std::chrono::high_resolution_clock::now() - last_time;
 		auto milliseconds = std::chrono::duration_cast<std::chrono::duration<uint32_t, std::milli>>(duration);
 		{

@@ -99,7 +99,10 @@ target_link_libraries(
           BulletDynamics
           BulletCollision
           BulletSoftBody
-          LinearMath)
+          LinearMath
+          opengl32
+          OpenXR::headers
+          OpenXR::openxr_loader)
 if(UNIX)
   find_library(WAYLAND wayland-egl)
   if(WAYLAND)
@@ -125,6 +128,7 @@ endif()
 
 target_compile_definitions(openblack
   PRIVATE
+  "XR_USE_GRAPHICS_API_OPENGL"
   "GLM_FORCE_LEFT_HANDED"
   "GLM_FORCE_RADIANS"
   "GLM_ENABLE_EXPERIMENTAL"

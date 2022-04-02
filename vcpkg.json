@@ -21,6 +21,11 @@
             "default-features": false,
             "features": ["tools"]
         },
-        "bullet3"
+        "bullet3",
+        {
+            "name": "openxr-loader",
+            "default-features": false,
+            "features": ["opengl", "vulkan"]
+        }
     ]
 }
