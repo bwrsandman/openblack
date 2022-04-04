@@ -18,79 +18,17 @@
 #include <spdlog/spdlog.h>
 
 #include "GameWindow.h"
-
-struct BgfxCallback: public bgfx::CallbackI
-{
-	~BgfxCallback() override = default;
-
-	void fatal(const char* filePath, uint16_t line, bgfx::Fatal::Enum code, const char* str) override
-	{
-		const static std::array CodeLookup = {
-		    "DebugCheck", "InvalidShader", "UnableToInitialize", "UnableToCreateTexture", "DeviceLost",
-		};
-		spdlog::critical("bgfx: {}:{}: FATAL ({}): {}", filePath, line, CodeLookup[code], str);
-
-		// Must terminate, continuing will cause crash anyway.
-		throw std::runtime_error(std::string("bgfx: ") + filePath + ":" + std::to_string(line) + ": FATAL (" +
-		                         CodeLookup[code] + "): " + str);
-	}
-
-	void traceVargs([[maybe_unused]] const char* filePath, [[maybe_unused]] uint16_t line, const char* format,
-	                va_list argList) override
-	{
-		char temp[0x2000];
-		char* out = temp;
-
-		int32_t len = vsnprintf(out, sizeof(temp), format, argList);
-		if (len > 0)
-		{
-			if ((int32_t)sizeof(temp) < len)
-			{
-				out = (char*)alloca(len + 1);
-				len = vsnprintf(out, len, format, argList);
-			}
-			out[len] = '\0';
-			if (len > 0 && out[len - 1] == '\n')
-			{
-				out[len - 1] = '\0';
-			}
-			spdlog::debug("bgfx: {}:{}: {}", filePath, line, out);
-		}
-	}
-	void profilerBegin([[maybe_unused]] const char* name, [[maybe_unused]] uint32_t abgr, [[maybe_unused]] const char* filePath,
-	                   [[maybe_unused]] uint16_t line) override
-	{
-	}
-	void profilerBeginLiteral([[maybe_unused]] const char* name, [[maybe_unused]] uint32_t abgr,
-	                          [[maybe_unused]] const char* filePath, [[maybe_unused]] uint16_t line) override
-	{
-	}
-	void profilerEnd() override {}
-	// Reading and writing to shader cache
-	uint32_t cacheReadSize([[maybe_unused]] uint64_t id) override { return 0; }
-	bool cacheRead([[maybe_unused]] uint64_t id, [[maybe_unused]] void* data, [[maybe_unused]] uint32_t size) override
-	{
-		return false;
-	}
-	void cacheWrite([[maybe_unused]] uint64_t id, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t size) override {}
-	// Saving a screen shot
-	void screenShot([[maybe_unused]] const char* filePath, [[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height,
-	                [[maybe_unused]] uint32_t pitch, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t size,
-	                [[maybe_unused]] bool yflip) override
-	{
-	}
-	// Saving a video
-	void captureBegin([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t pitch,
-	                  [[maybe_unused]] bgfx::TextureFormat::Enum _format, [[maybe_unused]] bool yflip) override
-	{
-	}
-	void captureEnd() override {}
-	void captureFrame([[maybe_unused]] const void* data, [[maybe_unused]] uint32_t size) override {}
-};
+#include "Renderer.h"
 
 struct OpenXrExample
 {
 	bool quit {false};
+	openblack::OpenXrManager oxr;
+	std::unique_ptr<openblack::GameWindow> window;
+	std::unique_ptr<openblack::Renderer> renderer;
+	glm::uvec2 windowSize;
+	std::vector<bgfx::TextureHandle> bgfx_textures;
+	std::vector<bgfx::FrameBufferHandle> bgfx_framebuffers;
 
 	// Application main function
 	void run()
@@ -117,15 +55,14 @@ struct OpenXrExample
 	//////////////////////////////////////
 
 	// The top level prepare function, which is broken down by task
-	openblack::OpenXrManager oxr;
-	void* hdc;
-	std::vector<bgfx::TextureHandle> bgfx_textures;
-	std::vector<bgfx::FrameBufferHandle> bgfx_framebuffers;
 	void prepare()
 	{
-		const auto windowSize = oxr.Prepare1();
-		prepareWindow(windowSize);
-		oxr.Prepare2(hdc, bgfx::getInternalData()->context);
+		windowSize = oxr.Prepare1();
+		bgfx::RendererType::Enum rendererType = bgfx::RendererType::OpenGL;
+		bool vsync = true;
+		window = std::make_unique<openblack::GameWindow>("", windowSize.x, windowSize.y, openblack::DisplayMode::Windowed, 0);
+		renderer = std::make_unique<openblack::Renderer>(window.get(), rendererType, vsync);
+		oxr.Prepare2(renderer->hdc, bgfx::getInternalData()->context);
 
 		bgfx_textures.resize(oxr.GetSwapchainSize());
 		bgfx_framebuffers.resize(oxr.GetSwapchainSize());
@@ -138,37 +75,6 @@ struct OpenXrExample
 			bgfx_framebuffers[i] = bgfx::createFrameBuffer(1, &bgfx_textures[i], false);
 		}
 		bgfx::frame();
-	}
-
-	std::unique_ptr<openblack::GameWindow> window;
-	glm::uvec2 windowSize;
-	BgfxCallback debugMessageCallback;
-	void prepareWindow(const glm::uvec2& renderTargetSize)
-	{
-		windowSize = renderTargetSize;
-		window = std::make_unique<openblack::GameWindow>("", windowSize.x, windowSize.y, openblack::DisplayMode::Windowed, 0);
-
-		bgfx::PlatformData pd;
-		window->GetNativeHandles(pd.nwh, pd.ndt, hdc);
-		pd.context = NULL;
-		pd.backBuffer = NULL;
-		pd.backBufferDS = NULL;
-		bgfx::setPlatformData(pd);
-
-		bgfx::Init init;
-		init.type = bgfx::RendererType::OpenGL;
-		init.resolution.width = windowSize.x;
-		init.resolution.height = windowSize.y;
-		init.platformData.nwh = pd.nwh;
-		init.platformData.ndt = pd.ndt;
-		init.resolution.reset = BGFX_RESET_VSYNC;
-
-		init.callback = dynamic_cast<bgfx::CallbackI*>(&debugMessageCallback);
-
-		if (!bgfx::init(init))
-		{
-			throw std::runtime_error("Failed to initialize bgfx.");
-		}
 	}
 
 	//////////////////////////////////////
