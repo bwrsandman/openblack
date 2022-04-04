@@ -26,6 +26,7 @@
             "name": "openxr-loader",
             "default-features": false,
             "features": ["opengl", "vulkan"]
-        }
+        },
+        "glad"
     ]
 }

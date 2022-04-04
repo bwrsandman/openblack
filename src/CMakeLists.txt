@@ -76,6 +76,7 @@ target_include_directories(
                     ${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIR}
                     ${CMAKE_CURRENT_BINARY_DIR}/../include)
 target_link_directories(openblack PRIVATE ${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS})
+find_package(glad CONFIG REQUIRED)
 target_link_libraries(
   openblack
   PRIVATE
@@ -102,7 +103,8 @@ target_link_libraries(
           LinearMath
           opengl32
           OpenXR::headers
-          OpenXR::openxr_loader)
+          OpenXR::openxr_loader
+          glad::glad)
 if(UNIX)
   find_library(WAYLAND wayland-egl)
   if(WAYLAND)
