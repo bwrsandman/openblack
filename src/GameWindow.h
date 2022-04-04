@@ -35,7 +35,7 @@ public:
 	GameWindow(const std::string& title, int width, int height, DisplayMode displayMode, uint32_t extraFlags);
 
 	[[nodiscard]] SDL_Window* GetHandle() const;
-	void GetNativeHandles(void*& nativeWindow, void*& nativeDisplay) const;
+	void GetNativeHandles(void*& nativeWindow, void*& nativeDisplay, void*& windowContext) const;
 
 	[[nodiscard]] bool IsOpen() const;
 	[[nodiscard]] float GetBrightness() const;

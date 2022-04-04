@@ -125,7 +125,8 @@ Renderer::Renderer(const GameWindow* window, bgfx::RendererType::Enum rendererTy
 		init.resolution.height = static_cast<uint32_t>(drawable_height);
 
 		// Get Native Handles from SDL window
-		window->GetNativeHandles(init.platformData.nwh, init.platformData.ndt);
+		void* hdc;
+		window->GetNativeHandles(init.platformData.nwh, init.platformData.ndt, hdc);
 	}
 
 	init.resolution.reset = BGFX_RESET_NONE;

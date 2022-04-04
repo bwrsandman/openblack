@@ -80,7 +80,7 @@ SDL_Window* GameWindow::GetHandle() const
 	return _window.get();
 }
 
-void GameWindow::GetNativeHandles(void*& nativeWindow, void*& nativeDisplay) const
+void GameWindow::GetNativeHandles(void*& nativeWindow, void*& nativeDisplay, void*& windowContext) const
 {
 	SDL_SysWMinfo wmi;
 	SDL_VERSION(&wmi.version);
@@ -136,6 +136,7 @@ void GameWindow::GetNativeHandles(void*& nativeWindow, void*& nativeDisplay) con
 	{
 		nativeWindow = wmi.info.win.window;
 		nativeDisplay = nullptr;
+		windowContext = wmi.info.win.hdc;
 	}
 	else
 #endif // defined(SDL_VIDEO_DRIVER_WINDOWS)

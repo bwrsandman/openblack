@@ -29,12 +29,12 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <SDL2/SDL.h>
-#include <SDL_syswm.h>
-
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
+#include "GameWindow.h"
 
 namespace xrs
 {
@@ -225,6 +225,8 @@ struct OpenXrExample
 	void prepare()
 	{
 		spdlog::set_level(spdlog::level::trace);
+		spdlog::stdout_color_mt("game");
+		spdlog::stdout_color_mt("graphics");
 		// The OpenXR instance and the OpenXR system provide information we'll require to create our window
 		// and rendering backend, so it has to come first
 		prepareXrInstance();
@@ -234,7 +236,6 @@ struct OpenXrExample
 		prepareXrSession();
 		prepareXrSwapchain();
 		prepareXrCompositionLayers();
-		// prepareGlFramebuffer();
 	}
 
 	bool enableDebug {true};
@@ -423,52 +424,31 @@ struct OpenXrExample
 		graphicsRequirements = instance.getOpenGLGraphicsRequirementsKHR(systemId, dispatch);
 	}
 
-	SDL_Window* window;
-	SDL_GLContext context;
+	std::unique_ptr<openblack::GameWindow> window;
 	glm::uvec2 windowSize;
 	BgfxCallback debugMessageCallback;
-	SDL_SysWMinfo wmi;
+	void* hdc;
 	void prepareWindow()
 	{
 		assert(renderTargetSize.x != 0 && renderTargetSize.y != 0);
 		windowSize = renderTargetSize;
 		//windowSize /= 4;
 
-		SDL_Init(SDL_INIT_VIDEO);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-
-		window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowSize.x, windowSize.y,
-		                          SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-		//context = SDL_GL_CreateContext(window);
-		SDL_VERSION(&wmi.version);
-		SDL_bool result = SDL_GetWindowWMInfo(window, &wmi);
-
+		window = std::make_unique<openblack::GameWindow>("", windowSize.x, windowSize.y, openblack::DisplayMode::Windowed, 0);
 
 		bgfx::PlatformData pd;
-#	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-#		if ENTRY_CONFIG_USE_WAYLAND
-		pd.ndt          = wmi.info.wl.display;
-#		else
-		pd.ndt          = wmi.info.x11.display;
-#		endif
-#	else
-		pd.ndt          = nullptr;
-#	endif // BX_PLATFORM_
-		pd.nwh          = wmi.info.win.window;
-
+		window->GetNativeHandles(pd.nwh, pd.ndt, hdc);
 		pd.context      = NULL;
 		pd.backBuffer   = NULL;
 		pd.backBufferDS = NULL;
 		bgfx::setPlatformData(pd);
 
-
 		bgfx::Init init;
 		init.type = bgfx::RendererType::OpenGL;
 		init.resolution.width = windowSize.x;
 		init.resolution.height = windowSize.y;
-		init.platformData.nwh = wmi.info.win.window;
-		init.platformData.ndt = nullptr;
+		init.platformData.nwh = pd.nwh;
+		init.platformData.ndt = pd.ndt;
 		init.resolution.reset = BGFX_RESET_VSYNC;
 
 		init.callback = dynamic_cast<bgfx::CallbackI*>(&debugMessageCallback);
@@ -478,33 +458,13 @@ struct OpenXrExample
 			throw std::runtime_error("Failed to initialize bgfx.");
 		}
 
-		auto internal_data = bgfx::getInternalData();
-		context = internal_data->context;
-
-		bgfx::setDebug(BGFX_DEBUG_TEXT);
-
-		bgfx::setViewRect(0, 0, 0, windowSize.x, windowSize.y);
-
-		// Set view 0 clear state.
-		bgfx::setViewClear(0
-			, BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH
-			, 0x303030ff
-			, 1.0f
-			, 0
-			);
-
-		bgfx::touch(0);
-
-		bgfx::frame();
-		bgfx::frame();
-
-		return;
 	}
 
 	xr::Session session;
 	void prepareXrSession()
 	{
-		xr::GraphicsBindingOpenGLWin32KHR graphicsBinding {wmi.info.win.hdc, (HGLRC)context};
+		auto internal_data = bgfx::getInternalData();
+		xr::GraphicsBindingOpenGLWin32KHR graphicsBinding {(HDC)hdc, (HGLRC)internal_data->context};
 		xr::SessionCreateInfo sci {{}, systemId};
 		sci.next = &graphicsBinding;
 		session = instance.createSession(sci);
@@ -615,7 +575,7 @@ struct OpenXrExample
 
 	void pollSdlEvents()
 	{
-		SDL_Event event;
+		/*SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
 			switch (event.type)
@@ -627,7 +587,7 @@ struct OpenXrExample
 				}
 				break;
 			}
-		}
+		}*/
 	}
 
 	void pollXrEvents()
@@ -791,7 +751,7 @@ struct OpenXrExample
 			session = nullptr;
 		}
 
-		SDL_DestroyWindow(window);
+		window.reset();
 
 		if (messenger)
 		{
@@ -803,7 +763,7 @@ struct OpenXrExample
 			instance = nullptr;
 		}
 
-		SDL_Quit();
+		//SDL_Quit();
 	}
 };
 
