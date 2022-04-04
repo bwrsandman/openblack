@@ -30,8 +30,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <SDL2/SDL.h>
+#include <SDL_syswm.h>
 
-#include <glad/glad.h>
+#include <bgfx/bgfx.h>
+#include <bgfx/platform.h>
 #include <spdlog/spdlog.h>
 
 namespace xrs
@@ -126,151 +128,74 @@ inline glm::mat4 toGlm(const XrPosef& p)
 
 } // namespace xrs
 
-inline void debugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message,
-                                 const void* userParam)
+struct BgfxCallback: public bgfx::CallbackI
 {
-	spdlog::debug("{}", message);
-}
+	~BgfxCallback() override = default;
 
-static std::string formatToString(GLenum format)
-{
-	switch (format)
+	void fatal(const char* filePath, uint16_t line, bgfx::Fatal::Enum code, const char* str) override
 	{
-	case GL_COMPRESSED_R11_EAC:
-		return "COMPRESSED_R11_EAC";
-	case GL_COMPRESSED_RED_RGTC1:
-		return "COMPRESSED_RED_RGTC1";
-	case GL_COMPRESSED_RG_RGTC2:
-		return "COMPRESSED_RG_RGTC2";
-	case GL_COMPRESSED_RG11_EAC:
-		return "COMPRESSED_RG11_EAC";
-	case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
-		return "COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT";
-	case GL_COMPRESSED_RGB8_ETC2:
-		return "COMPRESSED_RGB8_ETC2";
-	case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-		return "COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2";
-	case GL_COMPRESSED_RGBA8_ETC2_EAC:
-		return "COMPRESSED_RGBA8_ETC2_EAC";
-	case GL_COMPRESSED_SIGNED_R11_EAC:
-		return "COMPRESSED_SIGNED_R11_EAC";
-	case GL_COMPRESSED_SIGNED_RG11_EAC:
-		return "COMPRESSED_SIGNED_RG11_EAC";
-	case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
-		return "COMPRESSED_SRGB_ALPHA_BPTC_UNORM";
-	case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
-		return "COMPRESSED_SRGB8_ALPHA8_ETC2_EAC";
-	case GL_COMPRESSED_SRGB8_ETC2:
-		return "COMPRESSED_SRGB8_ETC2";
-	case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-		return "COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2";
-	case GL_DEPTH_COMPONENT16:
-		return "DEPTH_COMPONENT16";
-	case GL_DEPTH_COMPONENT24:
-		return "DEPTH_COMPONENT24";
-	case GL_DEPTH_COMPONENT32:
-		return "DEPTH_COMPONENT32";
-	case GL_DEPTH_COMPONENT32F:
-		return "DEPTH_COMPONENT32F";
-	case GL_DEPTH24_STENCIL8:
-		return "DEPTH24_STENCIL8";
-	case GL_R11F_G11F_B10F:
-		return "R11F_G11F_B10F";
-	case GL_R16_SNORM:
-		return "R16_SNORM";
-	case GL_R16:
-		return "R16";
-	case GL_R16F:
-		return "R16F";
-	case GL_R16I:
-		return "R16I";
-	case GL_R16UI:
-		return "R16UI";
-	case GL_R32F:
-		return "R32F";
-	case GL_R32I:
-		return "R32I";
-	case GL_R32UI:
-		return "R32UI";
-	case GL_R8_SNORM:
-		return "R8_SNORM";
-	case GL_R8:
-		return "R8";
-	case GL_R8I:
-		return "R8I";
-	case GL_R8UI:
-		return "R8UI";
-	case GL_RG16_SNORM:
-		return "RG16_SNORM";
-	case GL_RG16:
-		return "RG16";
-	case GL_RG16F:
-		return "RG16F";
-	case GL_RG16I:
-		return "RG16I";
-	case GL_RG16UI:
-		return "RG16UI";
-	case GL_RG32F:
-		return "RG32F";
-	case GL_RG32I:
-		return "RG32I";
-	case GL_RG32UI:
-		return "RG32UI";
-	case GL_RG8_SNORM:
-		return "RG8_SNORM";
-	case GL_RG8:
-		return "RG8";
-	case GL_RG8I:
-		return "RG8I";
-	case GL_RG8UI:
-		return "RG8UI";
-	case GL_RGB10_A2:
-		return "RGB10_A2";
-	case GL_RGB8:
-		return "RGB8";
-	case GL_RGB9_E5:
-		return "RGB9_E5";
-	case GL_RGBA16_SNORM:
-		return "RGBA16_SNORM";
-	case GL_RGBA16:
-		return "RGBA16";
-	case GL_RGBA16F:
-		return "RGBA16F";
-	case GL_RGBA16I:
-		return "RGBA16I";
-	case GL_RGBA16UI:
-		return "RGBA16UI";
-	case GL_RGBA2:
-		return "RGBA2";
-	case GL_RGBA32F:
-		return "RGBA32F";
-	case GL_RGBA32I:
-		return "RGBA32I";
-	case GL_RGBA32UI:
-		return "RGBA32UI";
-	case GL_RGBA8_SNORM:
-		return "RGBA8_SNORM";
-	case GL_RGBA8:
-		return "RGBA8";
-	case GL_RGBA8I:
-		return "RGBA8I";
-	case GL_RGBA8UI:
-		return "RGBA8UI";
-	case GL_SRGB8_ALPHA8:
-		return "SRGB8_ALPHA8";
-	case GL_SRGB8:
-		return "SRGB8";
-	case GL_RGB16F:
-		return "RGB16F";
-	case GL_DEPTH32F_STENCIL8:
-		return "DEPTH32F_STENCIL8";
-	case GL_BGR:
-		return "BGR (Out of spec)";
-	case GL_BGRA:
-		return "BGRA (Out of spec)";
+		const static std::array CodeLookup = {
+		    "DebugCheck", "InvalidShader", "UnableToInitialize", "UnableToCreateTexture", "DeviceLost",
+		};
+		spdlog::critical("bgfx: {}:{}: FATAL ({}): {}", filePath, line, CodeLookup[code], str);
+
+		// Must terminate, continuing will cause crash anyway.
+		throw std::runtime_error(std::string("bgfx: ") + filePath + ":" + std::to_string(line) + ": FATAL (" +
+		                         CodeLookup[code] + "): " + str);
 	}
-	return "unknown";
-}
+
+	void traceVargs([[maybe_unused]] const char* filePath, [[maybe_unused]] uint16_t line, const char* format,
+	                va_list argList) override
+	{
+		char temp[0x2000];
+		char* out = temp;
+
+		int32_t len = vsnprintf(out, sizeof(temp), format, argList);
+		if (len > 0)
+		{
+			if ((int32_t)sizeof(temp) < len)
+			{
+				out = (char*)alloca(len + 1);
+				len = vsnprintf(out, len, format, argList);
+			}
+			out[len] = '\0';
+			if (len > 0 && out[len - 1] == '\n')
+			{
+				out[len - 1] = '\0';
+			}
+			spdlog::debug("bgfx: {}:{}: {}", filePath, line, out);
+		}
+	}
+	void profilerBegin([[maybe_unused]] const char* name, [[maybe_unused]] uint32_t abgr, [[maybe_unused]] const char* filePath,
+	                   [[maybe_unused]] uint16_t line) override
+	{
+	}
+	void profilerBeginLiteral([[maybe_unused]] const char* name, [[maybe_unused]] uint32_t abgr,
+	                          [[maybe_unused]] const char* filePath, [[maybe_unused]] uint16_t line) override
+	{
+	}
+	void profilerEnd() override {}
+	// Reading and writing to shader cache
+	uint32_t cacheReadSize([[maybe_unused]] uint64_t id) override { return 0; }
+	bool cacheRead([[maybe_unused]] uint64_t id, [[maybe_unused]] void* data, [[maybe_unused]] uint32_t size) override
+	{
+		return false;
+	}
+	void cacheWrite([[maybe_unused]] uint64_t id, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t size) override {}
+	// Saving a screen shot
+	void screenShot([[maybe_unused]] const char* filePath, [[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height,
+	                [[maybe_unused]] uint32_t pitch, [[maybe_unused]] const void* data, [[maybe_unused]] uint32_t size,
+	                [[maybe_unused]] bool yflip) override
+	{
+	}
+	// Saving a video
+	void captureBegin([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height, [[maybe_unused]] uint32_t pitch,
+	                  [[maybe_unused]] bgfx::TextureFormat::Enum _format, [[maybe_unused]] bool yflip) override
+	{
+	}
+	void captureEnd() override {}
+	void captureFrame([[maybe_unused]] const void* data, [[maybe_unused]] uint32_t size) override {}
+};
 
 struct OpenXrExample
 {
@@ -299,6 +224,7 @@ struct OpenXrExample
 	// The top level prepare function, which is broken down by task
 	void prepare()
 	{
+		spdlog::set_level(spdlog::level::trace);
 		// The OpenXR instance and the OpenXR system provide information we'll require to create our window
 		// and rendering backend, so it has to come first
 		prepareXrInstance();
@@ -308,7 +234,7 @@ struct OpenXrExample
 		prepareXrSession();
 		prepareXrSwapchain();
 		prepareXrCompositionLayers();
-		prepareGlFramebuffer();
+		// prepareGlFramebuffer();
 	}
 
 	bool enableDebug {true};
@@ -500,38 +426,85 @@ struct OpenXrExample
 	SDL_Window* window;
 	SDL_GLContext context;
 	glm::uvec2 windowSize;
+	BgfxCallback debugMessageCallback;
+	SDL_SysWMinfo wmi;
 	void prepareWindow()
 	{
 		assert(renderTargetSize.x != 0 && renderTargetSize.y != 0);
 		windowSize = renderTargetSize;
-		windowSize /= 4;
+		//windowSize /= 4;
 
 		SDL_Init(SDL_INIT_VIDEO);
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, graphicsRequirements.maxApiVersionSupported.major());
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, graphicsRequirements.maxApiVersionSupported.minor());
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
 		window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowSize.x, windowSize.y,
-		                          SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
-		context = SDL_GL_CreateContext(window);
-		SDL_GL_MakeCurrent(window, context);
-		SDL_GL_SetSwapInterval(0);
-		gladLoadGL();
-		glDebugMessageCallback(debugMessageCallback, NULL);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		                          SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+		//context = SDL_GL_CreateContext(window);
+		SDL_VERSION(&wmi.version);
+		SDL_bool result = SDL_GetWindowWMInfo(window, &wmi);
+
+
+		bgfx::PlatformData pd;
+#	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+#		if ENTRY_CONFIG_USE_WAYLAND
+		pd.ndt          = wmi.info.wl.display;
+#		else
+		pd.ndt          = wmi.info.x11.display;
+#		endif
+#	else
+		pd.ndt          = nullptr;
+#	endif // BX_PLATFORM_
+		pd.nwh          = wmi.info.win.window;
+
+		pd.context      = NULL;
+		pd.backBuffer   = NULL;
+		pd.backBufferDS = NULL;
+		bgfx::setPlatformData(pd);
+
+
+		bgfx::Init init;
+		init.type = bgfx::RendererType::OpenGL;
+		init.resolution.width = windowSize.x;
+		init.resolution.height = windowSize.y;
+		init.platformData.nwh = wmi.info.win.window;
+		init.platformData.ndt = nullptr;
+		init.resolution.reset = BGFX_RESET_VSYNC;
+
+		init.callback = dynamic_cast<bgfx::CallbackI*>(&debugMessageCallback);
+
+		if (!bgfx::init(init))
+		{
+			throw std::runtime_error("Failed to initialize bgfx.");
+		}
+
+		auto internal_data = bgfx::getInternalData();
+		context = internal_data->context;
+
+		bgfx::setDebug(BGFX_DEBUG_TEXT);
+
+		bgfx::setViewRect(0, 0, 0, windowSize.x, windowSize.y);
+
+		// Set view 0 clear state.
+		bgfx::setViewClear(0
+			, BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH
+			, 0x303030ff
+			, 1.0f
+			, 0
+			);
+
+		bgfx::touch(0);
+
+		bgfx::frame();
+		bgfx::frame();
+
+		return;
 	}
 
 	xr::Session session;
 	void prepareXrSession()
 	{
-		xr::GraphicsBindingOpenGLWin32KHR graphicsBinding {wglGetCurrentDC(), wglGetCurrentContext()};
+		xr::GraphicsBindingOpenGLWin32KHR graphicsBinding {wmi.info.win.hdc, (HGLRC)context};
 		xr::SessionCreateInfo sci {{}, systemId};
 		sci.next = &graphicsBinding;
 		session = instance.createSession(sci);
@@ -551,19 +524,21 @@ struct OpenXrExample
 		swapchainFormats.resize(formatCount);
 		result = session.enumerateSwapchainFormats(static_cast<uint32_t>(swapchainFormats.size()), &formatCount,
 		                                           swapchainFormats.data());
-		for (const auto& format : swapchainFormats)
+		/*for (const auto& format : swapchainFormats)
 		{
-			spdlog::info("\t{}", formatToString((GLenum)format));
-		}
+		    spdlog::info("\t{}", formatToString((GLenum)format));
+		}*/
 	}
 
 	xr::SwapchainCreateInfo swapchainCreateInfo;
 	xr::Swapchain swapchain;
 	std::vector<xr::SwapchainImageOpenGLKHR> swapchainImages;
+	std::vector<bgfx::TextureHandle> bgfx_textures;
+	std::vector<bgfx::FrameBufferHandle> bgfx_framebuffers;
 	void prepareXrSwapchain()
 	{
 		swapchainCreateInfo.usageFlags = xr::SwapchainUsageFlagBits::TransferDst;
-		swapchainCreateInfo.format = (int64_t)GL_SRGB8_ALPHA8;
+		swapchainCreateInfo.format = (int64_t)0x8C43; // GL_SRGB8_ALPHA8;
 		swapchainCreateInfo.sampleCount = 1;
 		swapchainCreateInfo.arraySize = 1;
 		swapchainCreateInfo.faceCount = 1;
@@ -578,6 +553,19 @@ struct OpenXrExample
 		swapchainImages.resize(imageCount);
 		result = swapchain.enumerateSwapchainImages(static_cast<uint32_t>(swapchainImages.size()), &imageCount,
 		                                            reinterpret_cast<XrSwapchainImageBaseHeader*>(swapchainImages.data()));
+
+		bgfx_textures.resize(swapchainImages.size());
+		bgfx_framebuffers.resize(swapchainImages.size());
+		for (uint32_t i = 0; i < swapchainImages.size(); ++i)
+		{
+			bgfx_textures[i] =
+			    bgfx::createTexture2D(static_cast<uint16_t>(renderTargetSize.x), static_cast<uint16_t>(renderTargetSize.y),
+			                          false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
+			bgfx::frame();
+			bgfx::overrideInternal(bgfx_textures[i], static_cast<uintptr_t>(swapchainImages[i].image));
+			bgfx_framebuffers[i] = bgfx::createFrameBuffer(1, &bgfx_textures[i], false);
+		}
+		bgfx::frame();
 	}
 
 	std::array<xr::CompositionLayerProjectionView, 2> projectionLayerViews;
@@ -601,34 +589,6 @@ struct OpenXrExample
 				layerView.subImage.imageRect.offset.x = layerView.subImage.imageRect.extent.width;
 			}
 		};
-	}
-
-	struct GLFBO
-	{
-		GLuint id {0};
-		GLuint depthBuffer {0};
-	} fbo;
-
-	void prepareGlFramebuffer()
-	{
-		// Create a depth renderbuffer compatible with the Swapchain sample count and size
-		glGenRenderbuffers(1, &fbo.depthBuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, fbo.depthBuffer);
-		if (swapchainCreateInfo.sampleCount == 1)
-		{
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, swapchainCreateInfo.width, swapchainCreateInfo.height);
-		}
-		else
-		{
-			glRenderbufferStorageMultisample(GL_RENDERBUFFER, swapchainCreateInfo.sampleCount, GL_DEPTH24_STENCIL8,
-			                                 swapchainCreateInfo.width, swapchainCreateInfo.height);
-		}
-
-		// Create a framebuffer and attach the depth buffer to it
-		glGenFramebuffers(1, &fbo.id);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo.id);
-		glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, fbo.depthBuffer);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	}
 
 	//////////////////////////////////////
@@ -780,30 +740,27 @@ struct OpenXrExample
 		swapchain.acquireSwapchainImage(xr::SwapchainImageAcquireInfo {}, &swapchainIndex);
 		swapchain.waitSwapchainImage(xr::SwapchainImageWaitInfo {xr::Duration::infinite()});
 
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo.id);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainIndex].image, 0);
+		// Set view 0 default viewport.
+		bgfx::setViewFrameBuffer(0, bgfx_framebuffers[swapchainIndex]);
+		bgfx::setViewRect(0, 0, 0, renderTargetSize.x / 2, renderTargetSize.y);
+		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00FF00FF);
+		// This dummy draw call is here to make sure that view 0 is cleared
+		// if no other draw calls are submitted to view 0.
+		bgfx::touch(0);
 
-		// "render" to the swapchain image
-		glEnable(GL_SCISSOR_TEST);
-		glScissor(0, 0, renderTargetSize.x / 2, renderTargetSize.y);
-		glClearColor(0, 1, 0, 1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glScissor(renderTargetSize.x / 2, 0, renderTargetSize.x / 2, renderTargetSize.y);
-		glClearColor(0, 0, 1, 1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// Set view 1 default viewport.
+		bgfx::setViewFrameBuffer(1, bgfx_framebuffers[swapchainIndex]);
+		bgfx::setViewRect(1, renderTargetSize.x / 2, 0, renderTargetSize.x / 2, renderTargetSize.y);
+		bgfx::setViewClear(1, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x0000FFFF);
+		// This dummy draw call is here to make sure that view 0 is cleared
+		// if no other draw calls are submitted to view 0.
+		bgfx::touch(1);
 
-		// fast blit from the fbo to the window surface
-		glDisable(GL_SCISSOR_TEST);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-		glBlitFramebuffer(0, 0, renderTargetSize.x, renderTargetSize.y, 0, 0, windowSize.x, windowSize.y, GL_COLOR_BUFFER_BIT,
-		                  GL_NEAREST);
-
-		glFramebufferTexture(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 0, 0);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		// Advance to next frame. Rendering thread will be kicked to
+		// process submitted rendering primitives.
+		bgfx::frame();
 
 		swapchain.releaseSwapchainImage(xr::SwapchainImageReleaseInfo {});
-
-		SDL_GL_SwapWindow(window);
 	}
 
 	//////////////////////////////////////
@@ -811,17 +768,17 @@ struct OpenXrExample
 	//////////////////////////////////////
 	void destroy()
 	{
-		if (fbo.id != 0)
+		for (uint32_t i = 0; i < bgfx_framebuffers.size(); ++i)
 		{
-			glDeleteFramebuffers(1, &fbo.id);
-			fbo.id = 0;
+			bgfx::destroy(bgfx_framebuffers[i]);
 		}
-
-		if (fbo.depthBuffer != 0)
+		for (uint32_t i = 0; i < bgfx_textures.size(); ++i)
 		{
-			glDeleteRenderbuffers(1, &fbo.depthBuffer);
-			fbo.depthBuffer = 0;
+			bgfx::destroy(bgfx_textures[i]);
 		}
+		
+		// Shutdown bgfx.
+		bgfx::shutdown();
 
 		if (swapchain)
 		{
@@ -834,7 +791,6 @@ struct OpenXrExample
 			session = nullptr;
 		}
 
-		SDL_GL_DeleteContext(context);
 		SDL_DestroyWindow(window);
 
 		if (messenger)

@@ -38,6 +38,7 @@ vcpkg_from_github(OUT_SOURCE_PATH SOURCE_PATH
     REF a7ac0aa3ae685505a1760e64b98e6c1ccc0b76a5
     SHA512 f7946c32e0e1caad71199f48a5bcec7e7a9c70f3c3f60fdcd508b2f3d165317a64232dfd591a8bd9e611e1afd817240172eb8bcb78756f093cceaf931d35009c
     PATCHES
+        bgfx-Add-BGFX_MULTITHREADED-option.patch
         # https://github.com/bkaradzic/bgfx.cmake/pull/129
         0001-bx-Link-with-android-log-library.patch
         0002-examples-Don-t-build-on-android-by-default.patch
@@ -66,7 +67,8 @@ vcpkg_from_github(OUT_SOURCE_PATH SOURCE_PATH_BGFX
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-        tools       BGFX_BUILD_TOOLS
+        tools         BGFX_BUILD_TOOLS
+        multithreaded BGFX_MULTITHREADED
 )
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)

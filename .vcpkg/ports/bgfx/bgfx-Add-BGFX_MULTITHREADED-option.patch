@@ -1,0 +1,42 @@
+From f5351f53f64a52b6bbf2f314f1f701cb8d3e0d9c Mon Sep 17 00:00:00 2001
+From: Sandy Carter <bwrsandman@gmail.com>
+Date: Sun, 3 Apr 2022 22:23:09 -0400
+Subject: [PATCH] bgfx: Add BGFX_MULTITHREADED option
+
+---
+ CMakeLists.txt   | 1 +
+ cmake/bgfx.cmake | 6 +++++-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e284242..0488c92 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -27,6 +27,7 @@ option( BGFX_INSTALL          "Create installation target."                   ON
+ option( BGFX_INSTALL_EXAMPLES "Install examples and their runtimes."          OFF )
+ option( BGFX_CUSTOM_TARGETS   "Include convenience custom targets."           ON  )
+ option( BGFX_AMALGAMATED      "Amalgamated bgfx build for faster compilation" OFF )
++option( BGFX_MULTITHREADED    "Build bgfx with multithreaded configuration"   ON )
+ option( BX_AMALGAMATED        "Amalgamated bx build for faster compilation"   OFF )
+ option( BGFX_CONFIG_RENDERER_WEBGPU     "Enables the webgpu renderer"         OFF )
+ 
+diff --git a/cmake/bgfx.cmake b/cmake/bgfx.cmake
+index 9010391..dac71a2 100755
+--- a/cmake/bgfx.cmake
++++ b/cmake/bgfx.cmake
+@@ -70,7 +70,11 @@ if( MSVC )
+ endif()
+ 
+ # Add debug config required in bx headers since bx is private
+-target_compile_definitions(bgfx PUBLIC "BX_CONFIG_DEBUG=$<CONFIG:Debug>")
++target_compile_definitions(bgfx
++	PUBLIC
++		"BX_CONFIG_DEBUG=$<CONFIG:Debug>"
++		"BGFX_CONFIG_MULTITHREADED=$<BOOL:${BGFX_MULTITHREADED}>"
++)
+ 
+ # Includes
+ target_include_directories( bgfx
+-- 
+2.35.1.windows.1
+
