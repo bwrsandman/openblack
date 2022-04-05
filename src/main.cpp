@@ -69,7 +69,7 @@ struct OpenXrExample
 		for (uint32_t i = 0; i < oxr.GetSwapchainSize(); ++i)
 		{
 			bgfx_textures[i] = bgfx::createTexture2D(static_cast<uint16_t>(windowSize.x), static_cast<uint16_t>(windowSize.y),
-			                                         false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
+			                                         false, 2, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
 			bgfx::frame();
 			bgfx::overrideInternal(bgfx_textures[i], oxr.GetSwapchainImage(i));
 			bgfx_framebuffers[i] = bgfx::createFrameBuffer(1, &bgfx_textures[i], false);
@@ -122,7 +122,7 @@ struct OpenXrExample
 
 		// Set view 0 default viewport.
 		bgfx::setViewFrameBuffer(0, bgfx_framebuffers[swapchainIndex]);
-		bgfx::setViewRect(0, 0, 0, windowSize.x / 2, windowSize.y);
+		bgfx::setViewRect(0, 0, 0, windowSize.x, windowSize.y);
 		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00FF00FF);
 		// This dummy draw call is here to make sure that view 0 is cleared
 		// if no other draw calls are submitted to view 0.
@@ -130,7 +130,7 @@ struct OpenXrExample
 
 		// Set view 1 default viewport.
 		bgfx::setViewFrameBuffer(1, bgfx_framebuffers[swapchainIndex]);
-		bgfx::setViewRect(1, windowSize.x / 2, 0, windowSize.x / 2, windowSize.y);
+		bgfx::setViewRect(1, windowSize.x, 0, windowSize.x / 2, windowSize.y);
 		bgfx::setViewClear(1, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x0000FFFF);
 		// This dummy draw call is here to make sure that view 0 is cleared
 		// if no other draw calls are submitted to view 0.

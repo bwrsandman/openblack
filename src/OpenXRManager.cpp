@@ -207,7 +207,7 @@ glm::uvec2 OpenXrManager::PrepareXrSystem()
 		throw std::runtime_error("Per-eye images have different recommended heights");
 	}
 
-	renderTargetSize = {viewConfigViews[0].recommendedImageRectWidth * 2, viewConfigViews[0].recommendedImageRectHeight};
+	renderTargetSize = {viewConfigViews[0].recommendedImageRectWidth, viewConfigViews[0].recommendedImageRectHeight};
 
 	graphicsRequirements = instance.getOpenGLGraphicsRequirementsKHR(systemId, dispatch);
 
@@ -248,7 +248,7 @@ void OpenXrManager::PrepareXrSwapchain()
 	swapchainCreateInfo.usageFlags = xr::SwapchainUsageFlagBits::TransferDst;
 	swapchainCreateInfo.format = (int64_t)0x8C43; // GL_SRGB8_ALPHA8;
 	swapchainCreateInfo.sampleCount = 1;
-	swapchainCreateInfo.arraySize = 1;
+	swapchainCreateInfo.arraySize = 2;
 	swapchainCreateInfo.faceCount = 1;
 	swapchainCreateInfo.mipCount = 1;
 	swapchainCreateInfo.width = renderTargetSize.x;
