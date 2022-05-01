@@ -310,12 +310,14 @@ TEST_F(MobileWallHugWalks, mobilewallhug2)
 	MobileWallHugScenarioAssert();
 }
 
-TEST_F(MobileWallHugWalks, mobilewallhug_footpath1)
+// TODO(bwrsandman): Remove DISABLED_ prefix once walking on footpath is implemented
+TEST_F(MobileWallHugWalks, DISABLED_mobilewallhug_footpath1)
 {
 	MobileWallHugScenarioAssert();
 }
 
-TEST_F(MobileWallHugWalks, mobilewallhug_footpath2)
+// TODO(bwrsandman): Remove DISABLED_ prefix once walking on footpath is implemented
+TEST_F(MobileWallHugWalks, DISABLED_mobilewallhug_footpath2)
 {
 	MobileWallHugScenarioAssert();
 }
