@@ -9,9 +9,11 @@
 
 #include <PackFile.h>
 
+#include <cassert>
 #include <cstdlib>
 #include <cxxopts.hpp>
 #include <fstream>
+#include <limits>
 #include <string>
 
 int PrintRawBytes(const void* data, std::size_t size)
@@ -320,9 +322,38 @@ int WriteRaw(const std::filesystem::path& outFilename, const std::vector<std::fi
 	return EXIT_SUCCESS;
 }
 
-int WriteMeshFile(const std::filesystem::path& outFilename)
+int WriteMeshFile(const std::filesystem::path& outFilename, const std::vector<std::filesystem::path> inFilenames)
 {
 	openblack::pack::PackFile pack;
+
+	for (const auto& filename : inFilenames)
+	{
+		std::vector<uint8_t> data;
+		if (!filename.empty())
+		{
+			std::ifstream file(filename, std::ios::binary);
+			if (!file.is_open())
+			{
+				std::fprintf(stderr, "Could not open source file \"%s\"\n", filename.string().c_str());
+				return EXIT_FAILURE;
+			}
+			file.seekg(0, std::ios_base::end);
+			const auto size = file.tellg();
+			file.seekg(0, std::ios_base::beg);
+			data.resize(static_cast<size_t>(size));
+			try
+			{
+				file.read(reinterpret_cast<char*>(data.data()), data.size());
+				file.close();
+			}
+			catch (const std::ios_base::failure& e)
+			{
+				std::fprintf(stderr, "I/O error while reading \"%s\": %s\n", filename.string().c_str(), e.what());
+				return EXIT_FAILURE;
+			}
+		}
+		pack.InsertMesh(data);
+	}
 
 	// TODO(bwrsandman): expand on this to create files with contents
 	// CreateTextureBlocks();  // TODO(bwrsandman): Implement CreateTextureBlocks
@@ -370,6 +401,52 @@ struct Arguments
 	std::filesystem::path outFilename;
 };
 
+[[nodiscard]] std::string parseRange(std::string range, unsigned long currentSize, unsigned long& start, unsigned long& length)
+{
+	// TODO: If there's a '*' glob the filesystem and each entry should be expanded without ':'
+	// Split ':' after all file seps. Ignore drives like 'C:/', should be followed by either numbers or other ':'
+	auto colCount = std::count(range.begin(), range.end(), ':');
+	if (colCount > 2)
+	{
+		throw cxxopts::option_syntax_exception("pack-files entry cannot have more than two ':' for file.l3d[[:START]:LENGTH]");
+	}
+	// If there are none, it's like :1
+	if (colCount == 0)
+	{
+		range += ":1";
+		colCount = 1;
+	}
+	// If there is only one, it's followed by length and is like :currentSize:length
+	if (colCount == 1)
+	{
+		const auto pos = range.find(':');
+		range = range.substr(0, pos + 1) + std::to_string(currentSize) + range.substr(pos);
+		colCount = 1;
+	}
+	assert(std::count(range.begin(), range.end(), ':') == 2);
+
+	const auto index1 = range.find(':');
+	const auto index2 = range.find(':', index1 + 1);
+
+	const auto startStr = range.substr(index1 + 1, index2 - index1 - 1);
+	const auto lengthStr = range.substr(index2 + 1);
+
+	start = std::strtoul(startStr.c_str(), nullptr, 0);
+	length = std::strtoul(lengthStr.c_str(), nullptr, 0);
+
+	if (start == std::numeric_limits<unsigned long>::max())
+	{
+		throw cxxopts::option_syntax_exception("couldn't parse pack-file's start index as a number: " + startStr);
+	}
+
+	if (length == std::numeric_limits<unsigned long>::max())
+	{
+		throw cxxopts::option_syntax_exception("couldn't parse pack-file's length as a number: " + lengthStr);
+	}
+
+	return range.substr(0, index1);
+}
+
 bool parseOptions(int argc, char** argv, Arguments& args, int& return_code)
 {
 	cxxopts::Options options("packtool", "Inspect and extract files from LionHead pack files.");
@@ -390,7 +467,7 @@ bool parseOptions(int argc, char** argv, Arguments& args, int& return_code)
 		("a,animation", "List animation statistics.", cxxopts::value<uint32_t>())
 		("e,extract", "Extract contents of a block to filename (use \"stdout\" for piping to other tool).", cxxopts::value<std::filesystem::path>())
 		("w,write-raw", "Create Raw Data Pack.", cxxopts::value<std::filesystem::path>())
-		("write-mesh", "Create Mesh Pack.", cxxopts::value<std::filesystem::path>())
+		("write-mesh", "Create Mesh Pack (file.l3d[[:START]:LENGTH]...).", cxxopts::value<std::filesystem::path>())
 		("write-animation", "Create Mesh Pack.", cxxopts::value<std::filesystem::path>())
 		("pack-files", "Pack Files.", cxxopts::value<std::vector<std::filesystem::path>>())
 	;
@@ -408,12 +485,6 @@ bool parseOptions(int argc, char** argv, Arguments& args, int& return_code)
 			return_code = EXIT_SUCCESS;
 			return false;
 		}
-		if (result["write-mesh"].count() > 0)
-		{
-			args.mode = Arguments::Mode::WriteMeshPack;
-			args.outFilename = result["write-mesh"].as<std::filesystem::path>();
-			return true;
-		}
 		if (result["write-animation"].count() > 0)
 		{
 			args.mode = Arguments::Mode::WriteAnimationPack;
@@ -424,6 +495,38 @@ bool parseOptions(int argc, char** argv, Arguments& args, int& return_code)
 		if (result["pack-files"].count() == 0)
 		{
 			throw cxxopts::missing_argument_exception("pack-files");
+		}
+		if (result["write-mesh"].count() > 0)
+		{
+			args.mode = Arguments::Mode::WriteMeshPack;
+			args.outFilename = result["write-mesh"].as<std::filesystem::path>();
+			const auto ranges = result["pack-files"].as<std::vector<std::filesystem::path>>();
+			// Get size of expanded out filename
+			unsigned long currentSize = 0;
+			for (const auto& range : ranges)
+			{
+				unsigned long start;
+				unsigned long length;
+				const auto filename = parseRange(range.filename().string(), currentSize, start, length);
+				currentSize = std::max(start + length, currentSize);
+			}
+			// Expand out filename
+			std::vector<std::filesystem::path> expandedOutFilename;
+			expandedOutFilename.resize(currentSize);
+			currentSize = 0;
+			for ([[maybe_unused]] const auto& range : result["pack-files"].as<std::vector<std::filesystem::path>>())
+			{
+				unsigned long start;
+				unsigned long length;
+				const auto filename = parseRange(range.filename().string(), currentSize, start, length);
+				const auto parent = range.parent_path();
+				for (unsigned long i = 0; i < length; ++i)
+				{
+					expandedOutFilename[start + i] = parent / filename;
+				}
+			}
+			args.filenames = expandedOutFilename;
+			return true;
 		}
 		if (result["list-blocks"].count() > 0)
 		{
@@ -546,7 +649,7 @@ int main(int argc, char* argv[])
 
 	if (args.mode == Arguments::Mode::WriteMeshPack)
 	{
-		return WriteMeshFile(args.outFilename);
+		return WriteMeshFile(args.outFilename, args.filenames);
 	}
 
 	if (args.mode == Arguments::Mode::WriteAnimationPack)
