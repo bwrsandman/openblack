@@ -273,12 +273,15 @@ protected:
 				ASSERT_TRUE(registry.AllOf<ecs::components::MoveStateStepThroughTag>(villager_entt)) << msg;
 				break;
 			}
-			ASSERT_EQ(glm::xz(villager_transform.position), state.pos) << msg;
+			ASSERT_FLOAT_EQ(villager_transform.position.x, state.pos.x) << msg;
+			ASSERT_FLOAT_EQ(villager_transform.position.z, state.pos.y) << msg;
 			if (state.move_state != MOVE_STATE_FINAL_STEP) // Set in the next turn
 			{
-				ASSERT_EQ(villager_wallhug.step, state.step) << msg;
+				ASSERT_FLOAT_EQ(villager_wallhug.step.x, state.step.x) << msg;
+				ASSERT_FLOAT_EQ(villager_wallhug.step.y, state.step.y) << msg;
 			}
-			ASSERT_EQ(villager_wallhug.goal, state.goal) << msg;
+			ASSERT_FLOAT_EQ(villager_wallhug.goal.x, state.goal.x) << msg;
+			ASSERT_FLOAT_EQ(villager_wallhug.goal.y, state.goal.y) << msg;
 			ASSERT_EQ(villager_has_obstacle, state.circle_hug_info.obj_index.has_value()) << msg;
 			if (state.circle_hug_info.turns_to_obstacle != 0xFF || state.circle_hug_info.obj_index.has_value())
 			{

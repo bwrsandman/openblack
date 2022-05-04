@@ -61,7 +61,7 @@ void InitializeStepAroundObstacle(Transform& transform, WallHug& wallHug, const 
 {
 	// Use doubles for atan to have same precision on linux, osx and win32
 	const glm::dvec2 diff = obstacle.boundingCenter - glm::xz(transform.position);
-	const float angle = glm::atan(diff.y, diff.x);
+	const float angle = static_cast<float>(glm::atan(diff.y, diff.x));
 
 	const float clockwiseModifier = clockwise ? 1.0f : -1.0f;
 	const float angle_step = glm::radians(90.0f) - glm::radians(90.0f / 8.0f) * numCirclesAway;
