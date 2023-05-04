@@ -366,7 +366,10 @@ bool Game::Update()
 	// Input events
 	{
 		auto sdlInput = _profiler->BeginScoped(Profiler::Stage::SdlInput);
-		Locator::gameActionSystem::value().Frame();
+		if (!this->_gui->StealsFocus())
+		{
+			Locator::gameActionSystem::value().Frame();
+		}
 		SDL_Event e;
 		while (SDL_PollEvent(&e) != 0)
 		{
