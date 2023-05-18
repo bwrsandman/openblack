@@ -41,25 +41,24 @@
 #include <SDL2/SDL_syswm.h>
 #endif
 
-#include <3D/Camera.h>
-#include <3D/Sky.h>
-#include <Common/FileSystem.h>
-#include <ECS/Components/LivingAction.h>
-#include <ECS/Components/Transform.h>
-#include <ECS/Components/Villager.h>
-#include <ECS/Registry.h>
-#include <Game.h>
-#include <GameWindow.h>
-#include <Locator.h>
-#include <Resources/ResourcesInterface.h>
-
+#include "3D/Sky.h"
+#include "Camera/Camera.h"
+#include "Common/FileSystem.h"
 #include "Console.h"
+#include "ECS/Components/LivingAction.h"
+#include "ECS/Components/Transform.h"
+#include "ECS/Components/Villager.h"
+#include "ECS/Registry.h"
 #include "ECS/Systems/LivingActionSystemInterface.h"
+#include "Game.h"
+#include "GameWindow.h"
 #include "LHVMViewer.h"
 #include "LandIsland.h"
+#include "Locator.h"
 #include "MeshViewer.h"
 #include "PathFinding.h"
 #include "Profiler.h"
+#include "Resources/ResourcesInterface.h"
 #include "TextureViewer.h"
 
 // Turn off formatting because it adds spaces which break the stringifying

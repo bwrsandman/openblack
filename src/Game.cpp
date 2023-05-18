@@ -26,11 +26,11 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-#include "3D/Camera.h"
 #include "3D/CreatureBody.h"
 #include "3D/LandIslandInterface.h"
 #include "3D/Sky.h"
 #include "3D/Water.h"
+#include "Camera/Camera.h"
 #include "Common/EventManager.h"
 #include "Common/FileSystem.h"
 #include "Common/RandomNumberManager.h"
