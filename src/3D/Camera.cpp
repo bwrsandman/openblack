@@ -74,13 +74,11 @@ std::optional<ecs::components::Transform> Camera::RaycastMouseToLand()
 	// get the hit by raycasting to the land down via the mouse
 	ecs::components::Transform intersectionTransform;
 	float intersectDistance = 0.0f;
-	int sWidth;
-	int sHeight;
-	Game::Instance()->GetWindow()->GetSize(sWidth, sHeight);
+	const auto windowSize = static_cast<glm::vec2>(Game::Instance()->GetWindow()->GetSize());
 	glm::vec3 rayOrigin;
 	glm::vec3 rayDirection;
 	const glm::ivec2 mouseVec = Locator::gameActionSystem::value().GetMousePosition();
-	DeprojectScreenToWorld(mouseVec, glm::vec2(sWidth, sHeight), rayOrigin, rayDirection);
+	DeprojectScreenToWorld(mouseVec, windowSize, rayOrigin, rayDirection);
 	const auto& dynamicsSystem = Locator::dynamicsSystem::value();
 	if (auto hit = dynamicsSystem.RayCastClosestHit(rayOrigin, rayDirection, 1e10f))
 	{
@@ -360,11 +358,9 @@ void Camera::HandleActions()
 				{
 					handPos = _position + GetForward() * 500.0f; // orbit around a point 500 away from cam
 				}
-				int width;
-				int height;
-				Game::Instance()->GetWindow()->GetSize(width, height);
-				const float yaw = delta.x * (glm::two_pi<float>() / width);
-				float pitch = delta.y * (glm::pi<float>() / height);
+				const auto size = Game::Instance()->GetWindow()->GetSize();
+				const float yaw = delta.x * (glm::two_pi<float>() / size.x);
+				float pitch = delta.y * (glm::pi<float>() / size.y);
 
 				// limit orbit cam by cam rotation in x
 				if (pitch > 0.0f)
@@ -519,9 +515,7 @@ void Camera::Update(std::chrono::microseconds dt)
 
 	// deal with hand pulling camera around
 	float worldHandDist = 0.0f;
-	int sWidth;
-	int sHeight;
-	Game::Instance()->GetWindow()->GetSize(sWidth, sHeight);
+	const auto size = Game::Instance()->GetWindow()->GetSize();
 	if (_lmouseIsDown) // drag camera using hand
 	{
 		// get hand transform and project to screen coords
@@ -531,7 +525,7 @@ void Camera::Update(std::chrono::microseconds dt)
 		const glm::vec3 handOffset(0, 1.5f, 0);
 		auto handPos = handTransform.position;
 		glm::vec3 handToScreen;
-		glm::vec4 viewport = glm::vec4(0, 0, sWidth, sHeight);
+		auto viewport = glm::vec4(0, 0, size.x, size.y);
 		auto hit = RaycastMouseToLand();
 		if (hit)
 		{
@@ -540,14 +534,14 @@ void Camera::Update(std::chrono::microseconds dt)
 		if (ProjectWorldToScreen(handPos, viewport, handToScreen) && hit)
 		{
 			const auto& actionSystem = Locator::gameActionSystem::value();
-			// calculate distance between hand and mouse in screen cooords
+			// calculate distance between hand and mouse in screen coords
 			const glm::ivec2 mousePosition = actionSystem.GetMousePosition();
 			auto handScreenCoords = glm::ivec2(handToScreen);
-			handScreenCoords.y = sHeight - handScreenCoords.y;
+			handScreenCoords.y = size.y - handScreenCoords.y;
 			_handScreenVec = mousePosition - handScreenCoords;
 			_handDragMult = glm::length(glm::vec2(_handScreenVec));
 			worldHandDist = glm::length(hit->position - handPos);
-			_handDragMult /= sHeight;
+			_handDragMult /= size.y;
 		}
 		else if (!hit)
 		{                            // still on screen but did not hit land
