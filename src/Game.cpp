@@ -165,7 +165,6 @@ Game::Game(Arguments&& args)
 		// If gui captures this input, do not propagate
 		if (!this->_gui->ProcessEvents(event))
 		{
-			this->_camera->ProcessSDLEvent(event);
 			this->_config.running = this->ProcessEvents(event);
 			Locator::gameActionSystem::value().ProcessEvent(event);
 		}
