@@ -42,8 +42,7 @@ public:
 	[[nodiscard]] glm::vec3 GetRotation() const;
 
 	Camera& SetPosition(const glm::vec3& position);
-	/// Set rotation as euler angles in radians
-	Camera& SetRotation(const glm::vec3& eulerRadians);
+	Camera& SetFocus(const glm::vec3& position);
 
 	Camera& SetProjectionMatrixPerspective(float xFov, float aspect, float nearClip, float farClip);
 	Camera& SetProjectionMatrix(const glm::mat4& projection);
@@ -64,6 +63,9 @@ public:
 	[[nodiscard]] glm::mat4 GetRotationMatrix() const;
 
 protected:
+	/// Set rotation as euler angles in radians
+	Camera& SetRotation(const glm::vec3& eulerRadians);
+
 	glm::vec3 _position;
 	glm::vec3 _rotation;
 	glm::mat4 _projectionMatrix;

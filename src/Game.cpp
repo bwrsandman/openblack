@@ -21,6 +21,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/vec_swizzle.hpp>
 #include <spdlog/sinks/android_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -625,7 +626,7 @@ bool Game::Initialize()
 	(*_camera)
 	    .SetProjectionMatrixPerspective(_config.cameraXFov, aspect, _config.cameraNearClip, _config.cameraFarClip)
 	    .SetPosition(glm::vec3(1441.56f, 24.764f, 2081.76f))
-	    .SetRotation(glm::radians(glm::vec3(0.0f, -45.0f, 0.0f)));
+	    .SetFocus(glm::vec3(1442.27f, 24.764f, 2082.47f));
 
 	if (!LoadVariables())
 	{
