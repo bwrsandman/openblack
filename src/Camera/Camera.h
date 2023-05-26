@@ -32,21 +32,21 @@ public:
 	virtual ~Camera() = default;
 
 	[[nodiscard]] virtual glm::mat4 GetViewMatrix() const;
-	[[nodiscard]] const glm::mat4& GetProjectionMatrix() const { return _projectionMatrix; }
+	[[nodiscard]] const glm::mat4& GetProjectionMatrix() const;
 	[[nodiscard]] virtual glm::mat4 GetViewProjectionMatrix() const;
 
 	[[nodiscard]] std::optional<ecs::components::Transform> RaycastMouseToLand() const;
 
-	[[nodiscard]] glm::vec3 GetPosition() const { return _position; }
+	[[nodiscard]] glm::vec3 GetPosition() const;
 	/// Get rotation as euler angles in radians
-	[[nodiscard]] glm::vec3 GetRotation() const { return _rotation; }
+	[[nodiscard]] glm::vec3 GetRotation() const;
 
-	void SetPosition(const glm::vec3& position) { _position = position; }
+	void SetPosition(const glm::vec3& position);
 	/// Set rotation as euler angles in radians
-	void SetRotation(const glm::vec3& eulerRadians) { _rotation = eulerRadians; }
+	void SetRotation(const glm::vec3& eulerRadians);
 
 	void SetProjectionMatrixPerspective(float xFov, float aspect, float nearClip, float farClip);
-	void SetProjectionMatrix(const glm::mat4& projection) { _projectionMatrix = projection; }
+	void SetProjectionMatrix(const glm::mat4& projection);
 
 	[[nodiscard]] glm::vec3 GetForward() const;
 	[[nodiscard]] glm::vec3 GetRight() const;
