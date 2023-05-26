@@ -79,10 +79,12 @@ std::optional<ecs::components::Transform> Camera::RaycastMouseToLand() const
 	return std::nullopt;
 }
 
-void Camera::SetProjectionMatrixPerspective(float xFov, float aspect, float nearClip, float farClip)
+Camera& Camera::SetProjectionMatrixPerspective(float xFov, float aspect, float nearClip, float farClip)
 {
 	auto yFov = (glm::atan(glm::tan(glm::radians(xFov) / 2.0f)) / aspect) * 2.0f;
 	_projectionMatrix = glm::perspective(yFov, aspect, nearClip, farClip);
+
+	return *this;
 }
 
 glm::vec3 Camera::GetForward() const
@@ -206,17 +208,23 @@ glm::vec3 Camera::GetRotation() const
 	return _rotation;
 }
 
-void Camera::SetPosition(const glm::vec3& position)
+Camera& Camera::SetPosition(const glm::vec3& position)
 {
 	_position = position;
+
+	return *this;
 }
 
-void Camera::SetRotation(const glm::vec3& eulerRadians)
+Camera& Camera::SetRotation(const glm::vec3& eulerRadians)
 {
 	_rotation = eulerRadians;
+
+	return *this;
 }
 
-void Camera::SetProjectionMatrix(const glm::mat4& projection)
+Camera& Camera::SetProjectionMatrix(const glm::mat4& projection)
 {
 	_projectionMatrix = projection;
+
+	return *this;
 }
