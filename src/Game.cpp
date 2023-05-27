@@ -454,8 +454,7 @@ bool Game::Update()
 			auto& handTransform = _entityRegistry->Get<ecs::components::Transform>(_handEntity);
 			// TODO(#480): move using velocity rather than snapping hand to intersectionTransform
 			handTransform.position = intersectionTransform.position;
-			auto cameraRotation = _camera->GetRotation();
-			handTransform.rotation = glm::eulerAngleY(-cameraRotation.y) * modelRotationCorrection;
+			handTransform.rotation = glm::eulerAngleY(_camera->GetRotation().y) * modelRotationCorrection;
 			handTransform.rotation = intersectionTransform.rotation * handTransform.rotation;
 			handTransform.position += intersectionTransform.rotation * handOffset;
 			_entityRegistry->SetDirty();
