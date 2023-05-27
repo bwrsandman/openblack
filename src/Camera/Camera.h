@@ -56,7 +56,7 @@ public:
 	bool ProjectWorldToScreen(glm::vec3 worldPosition, glm::vec4 viewport, glm::vec3& outScreenPosition) const;
 
 	void Update(std::chrono::microseconds dt);
-	void HandleActions();
+	void HandleActions(std::chrono::microseconds dt);
 
 	[[nodiscard]] glm::mat4 GetRotationMatrix() const;
 

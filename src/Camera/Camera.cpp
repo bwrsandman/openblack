@@ -26,7 +26,7 @@
 using namespace openblack;
 
 Camera::Camera()
-    : _model(CameraModel::CreateModel(CameraModel::Model::Old))
+    : _model(CameraModel::CreateModel(CameraModel::Model::DefaultWorld))
 {
 }
 
@@ -176,9 +176,9 @@ void Camera::Update(std::chrono::microseconds dt)
 	SetFocus(_model->GetTargetFocus());
 }
 
-void Camera::HandleActions()
+void Camera::HandleActions(std::chrono::microseconds dt)
 {
-	_model->HandleActions(*this);
+	_model->HandleActions(dt, *this);
 
 	SetPosition(_model->GetTargetPosition());
 	SetFocus(_model->GetTargetFocus());

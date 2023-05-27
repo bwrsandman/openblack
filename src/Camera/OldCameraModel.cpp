@@ -79,7 +79,7 @@ void OldCameraModel::ResetVelocities()
 	_duv = glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
-void OldCameraModel::HandleActions(const Camera& camera)
+void OldCameraModel::HandleActions(std::chrono::microseconds dt, const Camera& camera)
 {
 	const auto& actionSystem = Locator::gameActionSystem::value();
 
@@ -558,4 +558,10 @@ glm::vec3 OldCameraModel::GetTargetPosition() const
 glm::vec3 OldCameraModel::GetTargetFocus() const
 {
 	return _targetPosition + glm::quat(_targetRotation) * glm::vec3(0.0f, 0.0f, 1.0f);
+}
+
+std::chrono::seconds OldCameraModel::GetIdleTime() const
+{
+	// Not implemented, not planned
+	return {};
 }
