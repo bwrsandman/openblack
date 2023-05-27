@@ -11,24 +11,31 @@
 
 #include <spdlog/spdlog.h>
 
+#include "Camera.h"
+
 using namespace openblack;
 
 DefaultWorldCameraModel::DefaultWorldCameraModel() = default;
 
 DefaultWorldCameraModel::~DefaultWorldCameraModel() = default;
 
-void DefaultWorldCameraModel::Update(std::chrono::microseconds dt, const Camera& camera) {}
+void DefaultWorldCameraModel::Update(std::chrono::microseconds dt, const Camera& camera)
+{
+	// Get current curve interpolated values from camera
+	_targetOrigin = camera.GetTargetPosition();
+	_targetFocus = camera.GetTargetFocus();
+}
 
-void DefaultWorldCameraModel::HandleActions(std::chrono::microseconds dt, const Camera& camera) {}
+void DefaultWorldCameraModel::HandleActions(std::chrono::microseconds dt) {}
 
 glm::vec3 DefaultWorldCameraModel::GetTargetPosition() const
 {
-	return {0.0f, 10.0f, 0.0f};
+	return _targetOrigin;
 }
 
 glm::vec3 DefaultWorldCameraModel::GetTargetFocus() const
 {
-	return {0.0f, 10.0f, 1.0f};
+	return _targetFocus;
 }
 
 std::chrono::seconds DefaultWorldCameraModel::GetIdleTime() const

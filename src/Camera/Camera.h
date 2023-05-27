@@ -38,6 +38,8 @@ public:
 	[[nodiscard]] glm::vec3 GetPosition() const;
 	[[nodiscard]] glm::vec3 GetFocus() const;
 	[[nodiscard]] glm::vec3 GetRotation() const;
+	[[nodiscard]] glm::vec3 GetTargetPosition() const;
+	[[nodiscard]] glm::vec3 GetTargetFocus() const;
 
 	Camera& SetPosition(const glm::vec3& position);
 	Camera& SetFocus(const glm::vec3& position);

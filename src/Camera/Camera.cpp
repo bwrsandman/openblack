@@ -178,10 +178,7 @@ void Camera::Update(std::chrono::microseconds dt)
 
 void Camera::HandleActions(std::chrono::microseconds dt)
 {
-	_model->HandleActions(dt, *this);
-
-	SetPosition(_model->GetTargetPosition());
-	SetFocus(_model->GetTargetFocus());
+	_model->HandleActions(dt);
 }
 
 const glm::mat4& Camera::GetProjectionMatrix() const
@@ -213,6 +210,18 @@ glm::vec3 Camera::GetRotation() const
 		yaw = glm::radians(180.0f) - yaw;
 	}
 	return glm::vec3(pitch, yaw, 0.0f);
+}
+
+glm::vec3 Camera::GetTargetPosition() const
+{
+	// TODO: Camera should interpolate between current state and target with a modified sigmoid interpolation
+	return GetPosition();
+}
+
+glm::vec3 Camera::GetTargetFocus() const
+{
+	// TODO: Camera should interpolate between current state and target with a modified sigmoid interpolation
+	return GetFocus();
 }
 
 Camera& Camera::SetPosition(const glm::vec3& position)

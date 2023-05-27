@@ -33,7 +33,7 @@ public:
 	virtual ~CameraModel();
 
 	virtual void Update(std::chrono::microseconds dt, const Camera& camera) = 0;
-	virtual void HandleActions(std::chrono::microseconds dt, const Camera& camera) = 0;
+	virtual void HandleActions(std::chrono::microseconds dt) = 0;
 	virtual glm::vec3 GetTargetPosition() const = 0;
 	virtual glm::vec3 GetTargetFocus() const = 0;
 	virtual std::chrono::seconds GetIdleTime() const = 0;

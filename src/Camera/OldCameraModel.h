@@ -23,7 +23,7 @@ public:
 	~OldCameraModel() override;
 
 	void Update(std::chrono::microseconds dt, const Camera& camera) override;
-	void HandleActions(std::chrono::microseconds dt, const Camera& camera) override;
+	void HandleActions(std::chrono::microseconds dt) override;
 	glm::vec3 GetTargetPosition() const override;
 	glm::vec3 GetTargetFocus() const override;
 	std::chrono::seconds GetIdleTime() const override;

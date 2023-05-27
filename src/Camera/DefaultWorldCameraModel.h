@@ -20,9 +20,14 @@ public:
 	~DefaultWorldCameraModel() final;
 
 	void Update(std::chrono::microseconds dt, const Camera& camera) final;
-	void HandleActions(std::chrono::microseconds dt, const Camera& camera) final;
+	void HandleActions(std::chrono::microseconds dt) final;
 	glm::vec3 GetTargetPosition() const final;
 	glm::vec3 GetTargetFocus() const final;
 	std::chrono::seconds GetIdleTime() const final;
+
+private:
+	// Values from target camera state which the camera may interpolate to. Not the current camera state.
+	glm::vec3 _targetOrigin;
+	glm::vec3 _targetFocus;
 };
 } // namespace openblack

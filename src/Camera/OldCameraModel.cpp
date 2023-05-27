@@ -79,8 +79,11 @@ void OldCameraModel::ResetVelocities()
 	_duv = glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
-void OldCameraModel::HandleActions(std::chrono::microseconds dt, const Camera& camera)
+void OldCameraModel::HandleActions(std::chrono::microseconds dt)
 {
+	// This is bad design, but we need a way to transition between the old model and the new
+	auto& camera = Game::Instance()->GetCamera();
+
 	const auto& actionSystem = Locator::gameActionSystem::value();
 
 	_targetPosition = camera.GetPosition();
@@ -365,6 +368,9 @@ void OldCameraModel::HandleActions(std::chrono::microseconds dt, const Camera& c
 			}
 		}
 	}
+
+	camera.SetPosition(GetTargetPosition());
+	camera.SetFocus(GetTargetFocus());
 }
 
 void OldCameraModel::Update(std::chrono::microseconds dt, const Camera& camera)
