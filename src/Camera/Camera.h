@@ -26,9 +26,7 @@ namespace openblack
 class Camera
 {
 public:
-	Camera(glm::vec3, glm::vec3);
 	Camera();
-
 	virtual ~Camera() = default;
 
 	[[nodiscard]] virtual glm::mat4 GetViewMatrix() const;
@@ -51,7 +49,7 @@ public:
 	[[nodiscard]] glm::vec3 GetRight() const;
 	[[nodiscard]] glm::vec3 GetUp() const;
 
-	[[nodiscard]] std::unique_ptr<Camera> Reflect(const glm::vec4& reflectionPlane) const;
+	[[nodiscard]] std::unique_ptr<Camera> Reflect() const;
 
 	void DeprojectScreenToWorld(glm::ivec2 screenPosition, glm::ivec2 screenSize, glm::vec3& outWorldOrigin,
 	                            glm::vec3& outWorldDirection) const;
@@ -66,9 +64,9 @@ protected:
 	/// Set rotation as euler angles in radians
 	Camera& SetRotation(const glm::vec3& eulerRadians);
 
-	glm::vec3 _position;
-	glm::vec3 _rotation;
-	glm::mat4 _projectionMatrix;
+	glm::vec3 _position = glm::vec3();
+	glm::vec3 _rotation = glm::vec3();
+	glm::mat4 _projectionMatrix = glm::mat4 {1.0f};
 	CameraModel _model;
 };
 
