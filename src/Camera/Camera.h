@@ -64,7 +64,7 @@ protected:
 	glm::vec3 _position = glm::vec3();
 	glm::vec3 _focus = glm::vec3(0.0f, 0.0f, 1.0f);
 	glm::mat4 _projectionMatrix = glm::mat4 {1.0f};
-	CameraModel _model;
+	std::unique_ptr<CameraModel> _model;
 };
 
 } // namespace openblack

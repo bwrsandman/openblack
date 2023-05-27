@@ -26,8 +26,8 @@
 using namespace openblack;
 
 Camera::Camera()
+    : _model(CameraModel::CreateModel(CameraModel::Model::Old))
 {
-	_model.FlyInit();
 }
 
 glm::mat4 Camera::GetRotationMatrix() const
@@ -170,18 +170,18 @@ bool Camera::ProjectWorldToScreen(glm::vec3 worldPosition, glm::vec4 viewport, g
 
 void Camera::Update(std::chrono::microseconds dt)
 {
-	_model.Update(dt, *this);
+	_model->Update(dt, *this);
 
-	SetPosition(_model.GetTargetPosition());
-	SetFocus(_model.GetTargetFocus());
+	SetPosition(_model->GetTargetPosition());
+	SetFocus(_model->GetTargetFocus());
 }
 
 void Camera::HandleActions()
 {
-	_model.HandleActions(*this);
+	_model->HandleActions(*this);
 
-	SetPosition(_model.GetTargetPosition());
-	SetFocus(_model.GetTargetFocus());
+	SetPosition(_model->GetTargetPosition());
+	SetFocus(_model->GetTargetFocus());
 }
 
 const glm::mat4& Camera::GetProjectionMatrix() const
