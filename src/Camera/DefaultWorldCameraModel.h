@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <glm/vec2.hpp>
+
 #include "CameraModel.h"
 
 namespace openblack
@@ -26,8 +28,19 @@ public:
 	std::chrono::seconds GetIdleTime() const final;
 
 private:
+	/// Modifies the given Euler angles based on the rotate Around and keyboard Move Deltas for rotation and zoom.
+	/// @param eulerAngles A reference representing Euler angles (yaw, pitch, roll) to be adjusted. Roll is always 0.
+	void TiltZoom(glm::vec3& eulerAngles, float scalingFactor);
+
 	// Values from target camera state which the camera may interpolate to. Not the current camera state.
 	glm::vec3 _targetOrigin;
 	glm::vec3 _targetFocus;
+
+	// State of input Action
+	glm::vec3 _rotateAroundDelta = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec2 _keyBoardMoveDelta = glm::vec2(0.0f, 0.0f);
+
+	// Updated at the start of a click+drag
+	glm::vec3 _focusAtClick = glm::vec3(0.0f, 0.0f, 0.0f);
 };
 } // namespace openblack
