@@ -12,11 +12,13 @@
 #include <numeric>
 
 #include <glm/gtc/constants.hpp>
+#include <glm/gtx/norm.hpp>
 #include <glm/gtx/polar_coordinates.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
 #include <spdlog/spdlog.h>
 
+#include "3D/LandIsland.h"
 #include "Camera.h"
 #include "Game.h"
 #include "Input/GameActionMapInterface.h"
@@ -100,6 +102,38 @@ float DefaultWorldCameraModel::GetVerticalLineInverseDistanceWeighingRayCast(con
 	return 1.0f / average;
 }
 
+bool DefaultWorldCameraModel::ConstrainAltitude()
+{
+	constexpr float floatingHeight = 3.0f;
+	bool hasBeenAdjusted = false;
+	const auto minAltitude = floatingHeight + Game::Instance()->GetLandIsland().GetHeightAt(glm::xz(_targetOrigin));
+	if (_targetOrigin.y < minAltitude)
+	{
+		_targetOrigin.y = minAltitude;
+		hasBeenAdjusted = true;
+	}
+
+	return hasBeenAdjusted;
+}
+
+bool DefaultWorldCameraModel::ConstrainDisc()
+{
+	bool hasBeenAdjusted = false;
+	constexpr auto discCentre = glm::vec3(2560.0f, 0.0f, 2560.0f);
+	constexpr auto discRadius = 5120.0f;
+
+	const auto delta = _targetOrigin - discCentre;
+	const auto distance2 = glm::length2(delta);
+
+	if (distance2 > discRadius * discRadius)
+	{
+		_targetOrigin = discCentre + delta * (discRadius / glm::sqrt(distance2));
+		hasBeenAdjusted = true;
+	}
+
+	return hasBeenAdjusted;
+}
+
 void DefaultWorldCameraModel::Update(std::chrono::microseconds dt, const Camera& camera)
 {
 	// Get current curve interpolated values from camera
@@ -146,6 +180,17 @@ void DefaultWorldCameraModel::Update(std::chrono::microseconds dt, const Camera&
 		// Rotate camera origin based on euler angles as polar coordinates and focus and distance at interaction
 		_targetOrigin = _focusAtClick + _distanceAtClick * glm::euclidean(glm::yx(eulerAngles));
 		_targetFocus = _focusAtClick;
+	}
+
+	{
+		bool originHasBeenAdjusted = false;
+		const auto originBackup = _targetOrigin;
+		originHasBeenAdjusted |= ConstrainAltitude();
+		originHasBeenAdjusted |= ConstrainDisc();
+		if (originHasBeenAdjusted)
+		{
+			_targetFocus = _targetFocus - originBackup + _targetOrigin;
+		}
 	}
 }
 
