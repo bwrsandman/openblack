@@ -19,8 +19,8 @@ class DefaultWorldCameraModel final: public CameraModel
 {
 	enum class Mode
 	{
-		Normal,
-		PolarRotation,
+		Cartesian,
+		Polar,
 	};
 
 public:
@@ -53,7 +53,7 @@ private:
 	/// @return If a modification to the camera position was applied.
 	bool ConstrainDisc();
 
-	Mode _mode = Mode::Normal;
+	Mode _mode = Mode::Cartesian;
 
 	// Values from target camera state which the camera may interpolate to. Not the current camera state.
 	glm::vec3 _targetOrigin;

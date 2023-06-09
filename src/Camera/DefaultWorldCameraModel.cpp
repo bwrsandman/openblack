@@ -32,6 +32,8 @@ DefaultWorldCameraModel::~DefaultWorldCameraModel() = default;
 
 void DefaultWorldCameraModel::TiltZoom(glm::vec3& eulerAngles, float scalingFactor)
 {
+	const float CAMERA_INTERACTION_STEP_SIZE = 3.0f;
+
 	// TODO: Early out if mouse middle button pressed or left+right pressed
 
 	// Update the camera's yaw if there's significant horizontal movement.
@@ -63,16 +65,17 @@ void DefaultWorldCameraModel::TiltZoom(glm::vec3& eulerAngles, float scalingFact
 		_focusAtClick += offset;
 	}
 
-	// TODO: zoom_delta to average island distance
+	_averageIslandDistance += _rotateAroundDelta.z;
+	_averageIslandDistance = glm::max(_averageIslandDistance, CAMERA_INTERACTION_STEP_SIZE + 0.1f);
 
 	const auto rotateAroundActivated = _rotateAroundDelta != glm::zero<glm::vec3>();
 	if (rotateAroundActivated)
 	{
-		_mode = Mode::PolarRotation;
+		_mode = Mode::Polar;
 	}
 	else
 	{
-		_mode = Mode::Normal;
+		_mode = Mode::Cartesian;
 	}
 	// TODO: TiltOn
 
@@ -167,19 +170,29 @@ void DefaultWorldCameraModel::Update(std::chrono::microseconds dt, const Camera&
 		}
 	}
 
+	const auto zoomDelta = _rotateAroundDelta.z;
+	// Put average distance point on half-line from camera
+	const auto averageIslandPoint = _targetOrigin + _averageIslandDistance * glm::normalize(_targetFocus - _targetOrigin);
+
 	// Adjust camera's orientation based on user input. Call will reset deltas.
 	TiltZoom(eulerAngles, scalingFactor);
 
-	if (_mode == Mode::PolarRotation)
+	if (_mode == Mode::Polar)
 	{
 		// Pitch should already be clamped in TiltZoom
-
-		// Put average distance point on half-line from camera
-		const auto averageIslandPoint = _targetOrigin + _averageIslandDistance * glm::normalize(_targetFocus - _targetOrigin);
 
 		// Rotate camera origin based on euler angles as polar coordinates and focus and distance at interaction
 		_targetOrigin = _focusAtClick + _distanceAtClick * glm::euclidean(glm::yx(eulerAngles));
 		_targetFocus = _focusAtClick;
+
+		if (zoomDelta != 0.0f)
+		{
+			const auto forward = glm::normalize(_targetFocus - _targetOrigin);
+			const auto newAverageIslandPoint = _targetOrigin + forward * _averageIslandDistance;
+			const auto diff = averageIslandPoint - newAverageIslandPoint;
+			_targetOrigin += diff;
+			_focusAtClick += diff;
+		}
 	}
 
 	{
