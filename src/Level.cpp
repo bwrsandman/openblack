@@ -12,8 +12,8 @@
 #include <fstream>
 #include <utility>
 
-#include "Common/FileSystem.h"
 #include "Common/StringUtils.h"
+#include "FileSystem/FileSystem.h"
 #include "Game.h"
 
 using namespace openblack;

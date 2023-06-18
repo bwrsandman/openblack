@@ -36,7 +36,6 @@ union SDL_Event;
 namespace openblack
 {
 class Camera;
-class FileSystem;
 class GameWindow;
 class EventManager;
 class LandIsland;
@@ -50,6 +49,11 @@ class Water;
 namespace debug::gui
 {
 class Gui;
+}
+
+namespace filesystem
+{
+class FileSystem;
 }
 
 namespace graphics
@@ -198,7 +202,7 @@ public:
 	[[nodiscard]] entt::entity GetHand() const;
 	[[nodiscard]] const LHVM::LHVM& GetLhvm() const { return *_lhvm; }
 	LHVM::LHVM& GetLhvm() { return *_lhvm; }
-	FileSystem& GetFileSystem() { return *_fileSystem; }
+	filesystem::FileSystem& GetFileSystem() { return *_fileSystem; }
 	ecs::Registry& GetEntityRegistry() { return *_entityRegistry; }
 	[[nodiscard]] ecs::Registry& GetEntityRegistry() const { return *_entityRegistry; }
 	const InfoConstants& GetInfoConstants() { return _infoConstants; } ///< Access should be only read-only
@@ -228,7 +232,7 @@ private:
 	std::unique_ptr<Profiler> _profiler;
 	std::unique_ptr<EventManager> _eventManager;
 
-	std::unique_ptr<FileSystem> _fileSystem;
+	std::unique_ptr<filesystem::FileSystem> _fileSystem;
 	std::unique_ptr<LandIsland> _landIsland;
 
 	// std::unique_ptr<L3DMesh> _testModel;

@@ -19,9 +19,9 @@
 #include <glm/gtx/vec_swizzle.hpp>
 #include <spdlog/spdlog.h>
 
-#include "Common/IStream.h"
 #include "Common/stb_image_write.h"
 #include "Dynamics/LandBlockBulletMeshInterface.h"
+#include "FileSystem/IStream.h"
 #include "Graphics/FrameBuffer.h"
 #include "Graphics/Texture2D.h"
 
