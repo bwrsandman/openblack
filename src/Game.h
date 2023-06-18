@@ -51,11 +51,6 @@ namespace debug::gui
 class Gui;
 }
 
-namespace filesystem
-{
-class FileSystemInterface;
-}
-
 namespace graphics
 {
 class Texture2D;
@@ -202,7 +197,6 @@ public:
 	[[nodiscard]] entt::entity GetHand() const;
 	[[nodiscard]] const LHVM::LHVM& GetLhvm() const { return *_lhvm; }
 	LHVM::LHVM& GetLhvm() { return *_lhvm; }
-	filesystem::FileSystemInterface& GetFileSystem() { return *_fileSystem; }
 	ecs::Registry& GetEntityRegistry() { return *_entityRegistry; }
 	[[nodiscard]] ecs::Registry& GetEntityRegistry() const { return *_entityRegistry; }
 	const InfoConstants& GetInfoConstants() { return _infoConstants; } ///< Access should be only read-only
@@ -232,7 +226,6 @@ private:
 	std::unique_ptr<Profiler> _profiler;
 	std::unique_ptr<EventManager> _eventManager;
 
-	std::unique_ptr<filesystem::FileSystemInterface> _fileSystem;
 	std::unique_ptr<LandIsland> _landIsland;
 
 	// std::unique_ptr<L3DMesh> _testModel;

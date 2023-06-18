@@ -16,6 +16,11 @@ namespace openblack
 
 class RandomNumberManagerInterface;
 
+namespace filesystem
+{
+class FileSystemInterface;
+}
+
 namespace resources
 {
 class ResourcesInterface;
@@ -36,6 +41,7 @@ void InitializeLevel();
 
 struct Locator
 {
+	using filesystem = entt::locator<filesystem::FileSystemInterface>;
 	using resources = entt::locator<resources::ResourcesInterface>;
 	using rng = entt::locator<RandomNumberManagerInterface>;
 	using rendereringSystem = entt::locator<ecs::systems::RenderingSystemInterface>;

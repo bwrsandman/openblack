@@ -17,6 +17,7 @@
 #include "FileSystem/FileSystemInterface.h"
 #include "Game.h"
 #include "GameThingSerializer.h"
+#include "Locator.h"
 
 using namespace openblack;
 using namespace openblack::filesystem;
@@ -28,7 +29,7 @@ FotFile::FotFile(Game& game)
 
 void FotFile::Load(const std::filesystem::path& path)
 {
-	auto stream = _game.GetFileSystem().Open(path, Stream::Mode::Read);
+	auto stream = Locator::filesystem::value().Open(path, Stream::Mode::Read);
 	serializer::GameThingSerializer serializer(*stream);
 	auto footpathLinkSaves = serializer.DeserializeList<serializer::GameThingSerializer::FootpathLinkSave>();
 	auto footpaths = serializer.DeserializeList<serializer::GameThingSerializer::Footpath>();
