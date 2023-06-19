@@ -57,7 +57,7 @@ bool Level::IsLevelFile(const std::filesystem::path& path)
 	auto levelFile = Locator::filesystem::value().Open(path, filesystem::Stream::Mode::Read);
 	while (!levelFile->IsEndOfFile())
 	{
-		std::string line = levelFile->GetLine();
+		const std::string line = levelFile->GetLine();
 		if (line.find(loadLandscapeLine) != std::string::npos)
 		{
 			return true;
@@ -80,7 +80,7 @@ Level Level::ParseLevel(const std::filesystem::path& path, Level::LandType landT
 	auto levelFile = Locator::filesystem::value().Open(path, filesystem::Stream::Mode::Read);
 	while (!levelFile->IsEndOfFile())
 	{
-		std::string const line = levelFile->GetLine();
+		const std::string line = levelFile->GetLine();
 		if (!isValid && line.find(loadLandscapeLine) != std::string::npos)
 		{
 			const std::filesystem::path landscapePath(string_utils::ExtractQuote(line));
