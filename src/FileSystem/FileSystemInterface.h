@@ -40,7 +40,7 @@ public:
 
 	[[nodiscard]] virtual std::filesystem::path FindPath(const std::filesystem::path& path) const = 0;
 	virtual std::unique_ptr<Stream> Open(const std::filesystem::path& path, Stream::Mode mode) = 0;
-	virtual bool Exists(const std::filesystem::path& path) const = 0;
+	[[nodiscard]] virtual bool Exists(const std::filesystem::path& path) const = 0;
 	virtual void SetGamePath(const std::filesystem::path& path) = 0;
 	[[nodiscard]] virtual const std::filesystem::path& GetGamePath() const = 0;
 	virtual void AddAdditionalPath(const std::filesystem::path& path) = 0;
