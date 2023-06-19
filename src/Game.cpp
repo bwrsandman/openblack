@@ -489,23 +489,20 @@ bool Game::Initialize()
 		_startMap = fileSystem.ScriptsPath() / _startMap;
 	}
 
-	const auto citadelOutsideMeshesPath = fileSystem.FindPath(fileSystem.CitadelPath() / "OutsideMeshes");
-
-	for (const auto& f : std::filesystem::directory_iterator {citadelOutsideMeshesPath})
-	{
-		if (f.path().extension() == ".zzz")
+	fileSystem.Iterate(fileSystem.CitadelPath() / "OutsideMeshes", [&meshManager](const std::filesystem::path& f) {
+		if (f.extension() == ".zzz")
 		{
-			SPDLOG_LOGGER_DEBUG(spdlog::get("game"), "Loading temple mesh: {}", f.path().stem().string());
+			SPDLOG_LOGGER_DEBUG(spdlog::get("game"), "Loading temple mesh: {}", f.stem().string());
 			try
 			{
-				meshManager.Load(fmt::format("temple/{}", f.path().stem().string()), resources::L3DLoader::FromDiskTag {}, f);
+				meshManager.Load(fmt::format("temple/{}", f.stem().string()), resources::L3DLoader::FromDiskTag {}, f);
 			}
 			catch (std::runtime_error& err)
 			{
 				SPDLOG_LOGGER_ERROR(spdlog::get("game"), "{}", err.what());
 			}
 		}
-	}
+	});
 	pack::PackFile pack;
 	pack.Open(fileSystem.FindPath(fileSystem.DataPath() / "AllMeshes.g3d"));
 	const auto& meshes = pack.GetMeshes();
@@ -530,16 +527,14 @@ bool Game::Initialize()
 		animationManager.Load(i, resources::L3DAnimLoader::FromBufferTag {}, animations[i]);
 	}
 
-	const auto creatures = fileSystem.FindPath(fileSystem.CreatureMeshPath());
-	for (const auto& f : std::filesystem::directory_iterator {creatures})
-	{
-		const auto& fileName = f.path().stem().string();
+	fileSystem.Iterate(fileSystem.CreatureMeshPath(), [&meshManager](const std::filesystem::path& f) {
+		const auto& fileName = f.stem().string();
 		SPDLOG_LOGGER_DEBUG(spdlog::get("game"), "Loading creature mesh: {}", fileName);
 		try
 		{
 			if (string_utils::BeginsWith(fileName, "Hand"))
 			{
-				continue;
+				return;
 			}
 
 			const auto meshId = creature::GetIdFromMeshName(fileName);
@@ -549,7 +544,7 @@ bool Game::Initialize()
 		{
 			SPDLOG_LOGGER_ERROR(spdlog::get("game"), "{}", err.what());
 		}
-	}
+	});
 
 	// Load loose one-off assets
 	animationManager.Load("coffre", resources::L3DAnimLoader::FromDiskTag {},
@@ -567,15 +562,13 @@ bool Game::Initialize()
 	// TODO(raffclar): #400: Parse level files within the resource loader
 	// TODO(raffclar): #405: Determine campaign levels from the challenge script file
 	// Load the campaign levels
-	const auto scriptsPath = fileSystem.FindPath(fileSystem.ScriptsPath());
-	for (const auto& f : std::filesystem::directory_iterator {scriptsPath})
-	{
-		const auto& name = f.path().stem().string();
-		if (f.path().extension() != ".txt" || name.rfind("InfoScript", 0) != std::string::npos)
+	fileSystem.Iterate(fileSystem.ScriptsPath(), [&levelManager](const std::filesystem::path& f) {
+		const auto& name = f.stem().string();
+		if (f.extension() != ".txt" || name.rfind("InfoScript", 0) != std::string::npos)
 		{
-			continue;
+			return;
 		}
-		SPDLOG_LOGGER_DEBUG(spdlog::get("game"), "Loading campaign level: {}", f.path().stem().string());
+		SPDLOG_LOGGER_DEBUG(spdlog::get("game"), "Loading campaign level: {}", f.stem().string());
 		try
 		{
 			if (Level::IsLevelFile(f))
@@ -588,23 +581,22 @@ bool Game::Initialize()
 		{
 			SPDLOG_LOGGER_ERROR(spdlog::get("game"), "{}", err.what());
 		}
-	}
+	});
 	// Load Playgrounds
 	// Attempt to load additional levels as playgrounds
-	for (const auto& f : std::filesystem::directory_iterator {scriptsPath / "Playgrounds"})
-	{
-		if (f.path().extension() != ".txt")
+	fileSystem.Iterate(fileSystem.PlaygroundPath(), [&levelManager](const std::filesystem::path& f) {
+		if (f.extension() != ".txt")
 		{
-			continue;
+			return;
 		}
-		const auto& name = f.path().stem().string();
+		const auto& name = f.stem().string();
 		if (levelManager.Contains(fmt::format("playgrounds/{}", name)))
 		{
 			// Already added
-			continue;
+			return;
 		}
 
-		SPDLOG_LOGGER_DEBUG(spdlog::get("game"), "Loading custom level: {}", f.path().stem().string());
+		SPDLOG_LOGGER_DEBUG(spdlog::get("game"), "Loading custom level: {}", f.stem().string());
 		try
 		{
 			if (Level::IsLevelFile(f))
@@ -617,7 +609,7 @@ bool Game::Initialize()
 		{
 			SPDLOG_LOGGER_ERROR(spdlog::get("game"), "{}", err.what());
 		}
-	}
+	});
 
 	// Create profiler
 	_profiler = std::make_unique<Profiler>();
@@ -635,22 +627,20 @@ bool Game::Initialize()
 		return false;
 	}
 
-	for (const auto& f : std::filesystem::directory_iterator {fileSystem.FindPath(fileSystem.TexturePath())})
-	{
-		if (f.path().extension() == ".raw")
+	fileSystem.Iterate(fileSystem.TexturePath(), [&textureManager](const std::filesystem::path& f) {
+		if (f.extension() == ".raw")
 		{
-			SPDLOG_LOGGER_DEBUG(spdlog::get("game"), "Loading raw texture: {}", f.path().stem().string());
+			SPDLOG_LOGGER_DEBUG(spdlog::get("game"), "Loading raw texture: {}", f.stem().string());
 			try
 			{
-				textureManager.Load(fmt::format("raw/{}", f.path().stem().string()), resources::Texture2DLoader::FromDiskTag {},
-				                    f);
+				textureManager.Load(fmt::format("raw/{}", f.stem().string()), resources::Texture2DLoader::FromDiskTag {}, f);
 			}
 			catch (std::runtime_error& err)
 			{
 				SPDLOG_LOGGER_ERROR(spdlog::get("game"), "{}", err.what());
 			}
 		}
-	}
+	});
 
 	_sky = std::make_unique<Sky>();
 	_water = std::make_unique<Water>();
