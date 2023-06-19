@@ -115,7 +115,7 @@ std::string FileStream::GetLine()
 	{
 		// fgets() includes the newline character in the output,
 		// so we remove it if it's there
-		int len = strlen(buffer);
+		size_t len = strlen(buffer);
 		if (len > 0 && buffer[len - 1] == '\n')
 		{
 			buffer[len - 1] = '\0';
