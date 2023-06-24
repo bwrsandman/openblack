@@ -9,12 +9,9 @@
 
 #include "Game.h"
 
-#include <cstdint>
-
 #include <string>
 
 #include <LHVM/LHVM.h>
-#include <Serializer/FotFile.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -22,7 +19,6 @@
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
-#include <spdlog/sinks/android_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
@@ -52,6 +48,7 @@
 #include "GameWindow.h"
 #include "Graphics/FrameBuffer.h"
 #include "Graphics/Texture2D.h"
+#include "Input/GameActionMap.h"
 #include "Input/GameActionMapInterface.h"
 #include "LHScriptX/Script.h"
 #include "Locator.h"
@@ -61,6 +58,7 @@
 #include "Renderer.h"
 #include "Resources/Loaders.h"
 #include "Resources/ResourcesInterface.h"
+#include "Serializer/FotFile.h"
 
 #ifdef _WIN32
 // clang-format off
@@ -443,7 +441,7 @@ bool Game::Update()
 				_handPose = glm::translate(_handPose, intersectionTransform.position);
 				_handPose *= glm::mat4(intersectionTransform.rotation);
 				_handPose = glm::scale(_handPose, intersectionTransform.scale);
-				_renderer->UpdateDebugCrossUniforms(_handPose);
+				_renderer->UpdateDebugCrossUniforms(glm::translate(_camera->GetTargetFocus()));
 			}
 		}
 
