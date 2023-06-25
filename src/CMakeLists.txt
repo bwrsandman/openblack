@@ -114,6 +114,7 @@ target_link_libraries(
           BulletSoftBody
           LinearMath
           minizip::minizip
+          unofficial::enet::enet
   PUBLIC spdlog::spdlog
 )
 

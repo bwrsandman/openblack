@@ -15,6 +15,7 @@
 
 namespace openblack
 {
+class IpcInterface;
 class RandomNumberManagerInterface;
 class LandIslandInterface;
 
@@ -53,5 +54,6 @@ struct Locator
 	using livingActionSystem = entt::locator<ecs::systems::LivingActionSystemInterface>;
 	using townSystem = entt::locator<ecs::systems::TownSystemInterface>;
 	using pathfindingSystem = entt::locator<ecs::systems::PathfindingSystemInterface>;
+	using ipc = entt::locator<IpcInterface>;
 };
 } // namespace openblack

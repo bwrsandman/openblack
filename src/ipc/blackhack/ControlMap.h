@@ -1,0 +1,191 @@
+#ifndef BLACKHACK_CONTROLMAP_H
+#define BLACKHACK_CONTROLMAP_H
+
+#include "types.h"
+
+enum BINDABLE_ACTIONS {
+  BINDABLE_ACTIONS_HELP,                  // F1
+  BINDABLE_ACTIONS_MOVE,                  // LMB
+  BINDABLE_ACTIONS_ACTION, // RMB
+  BINDABLE_ACTIONS_ZOOM_OUT, // Wheel Down
+  BINDABLE_ACTIONS_ZOOM_IN, // Wheel Up
+  BINDABLE_ACTIONS_TALK, // T
+  BINDABLE_ACTIONS_ZOOM_ON, // CTRL + LMB + RMB
+  BINDABLE_ACTIONS_MOVE_LEFT, // Left
+  BINDABLE_ACTIONS_MOVE_RIGHT, // Right
+  BINDABLE_ACTIONS_MOVE_FORWARDS, // Up
+  BINDABLE_ACTIONS_MOVE_BACKWARDS, // Down
+  BINDABLE_ACTIONS_TILT_UP, // A
+  BINDABLE_ACTIONS_TILT_DOWN, // Q
+  BINDABLE_ACTIONS_ROTATE_LEFT, // Z
+  BINDABLE_ACTIONS_ROTATE_RIGHT, // U
+  BINDABLE_ACTIONS_ROTATE_ON, // Shift
+  BINDABLE_ACTIONS_ROTATE_AROUND_MOUSE_ON, // MMB
+  BINDABLE_ACTIONS_ZOOM_TO_TEMPLE, // Space
+  BINDABLE_ACTIONS_ZOOM_TO_CREATURE, // C
+  BINDABLE_ACTIONS_ZOOM_TO_REALM, // F3
+  BINDABLE_ACTIONS_ZOOM_TO_INSIDE_TEMPLE, // F4
+  BINDABLE_ACTIONS_ZOOM_TO_CREATURE_ROOM, // F5
+  BINDABLE_ACTIONS_ZOOM_TO_CHALLENGE_ROOM, // F6
+  BINDABLE_ACTIONS_ZOOM_TO_SAVE_GAME_ROOM, // F7
+  BINDABLE_ACTIONS_ZOOM_TO_OPTIONS_ROOM, // F8
+  BINDABLE_ACTIONS_ZOOM_TO_LIBRARY, // F9
+  BINDABLE_ACTIONS_LEASH, // L
+  BINDABLE_ACTIONS_SHOW_VILLAGER_NAMES, // N
+  BINDABLE_ACTIONS_SHOW_VILLAGER_DETAILS, // S
+  BINDABLE_ACTIONS_QUICK_SAVE, // Ctrl + S
+  BINDABLE_ACTIONS_QUICK_LOAD, // Ctrl + L
+  BINDABLE_ACTIONS_PREVIOUS_LEASH, // V
+  BINDABLE_ACTIONS_NEXT_LEASH, // B
+
+  _BINDABLE_ACTIONS_COUNT,
+};
+
+static const char* BINDABLE_ACTIONS_strs[_BINDABLE_ACTIONS_COUNT] = {
+  "HELP (F1)",
+  "MOVE (LMB)",
+  "ACTION (RMB)",
+  "ZOOM_OUT (Wheel Down)",
+  "ZOOM_IN (Wheel Up)",
+  "TALK (T)",
+  "ZOOM_ON (CTRL + LMB + RMB)",
+  "MOVE_LEFT (Left)",
+  "MOVE_RIGHT (Right)",
+  "MOVE_FORWARDS (Up)",
+  "MOVE_BACKWARDS (Down)",
+  "TILT_UP (A)",
+  "TILT_DOWN (Q)",
+  "ROTATE_LEFT (Z)",
+  "ROTATE_RIGHT (U)",
+  "ROTATE_ON (Shift)",
+  "ROTATE_AROUND_MOUSE_ON (MMB)",
+  "ZOOM_TO_TEMPLE (Space)",
+  "ZOOM_TO_CREATURE (C)",
+  "ZOOM_TO_REALM (F3)",
+  "ZOOM_TO_INSIDE_TEMPLE (F4)",
+  "ZOOM_TO_CREATURE_ROOM (F5)",
+  "ZOOM_TO_CHALLENGE_ROOM (F6)",
+  "ZOOM_TO_SAVE_GAME_ROOM (F7)",
+  "ZOOM_TO_OPTIONS_ROOM (F8)",
+  "ZOOM_TO_LIBRARY (F9)",
+  "LEASH (L)",
+  "SHOW_VILLAGER_NAMES (N)",
+  "SHOW_VILLAGER_DETAILS (S)",
+  "QUICK_SAVE (Ctrl + S)",
+  "QUICK_LOAD (Ctrl + L)",
+  "PREVIOUS_LEASH (V)",
+  "NEXT_LEASH (B)",
+};
+
+enum LH_KEY {
+  LH_KEY_NONE = 0x0,
+
+  LH_KEY_ESC = 0x1,
+
+  LH_KEY_1 = 0x2,
+  LH_KEY_2 = 0x3,
+  LH_KEY_3 = 0x4,
+  LH_KEY_4 = 0x5,
+  LH_KEY_5 = 0x6,
+  LH_KEY_6 = 0x7,
+  LH_KEY_7 = 0x8,
+  LH_KEY_8 = 0x9,
+  LH_KEY_9 = 0xA,
+  LH_KEY_0 = 0xB,
+  LH_KEY_MINUS = 0xC,
+  LH_KEY_EQUALS = 0xD,
+  LH_KEY_BACKSPACE = 0xD,
+
+  LH_KEY_Q = 0x10,
+  LH_KEY_W = 0x11,
+  LH_KEY_E = 0x12,
+  LH_KEY_R = 0x13,
+  LH_KEY_T = 0x14,
+  LH_KEY_ENTER = 0x1D,
+  LH_KEY_CTRL = 0x1D,
+  LH_KEY_A = 0x1E,
+  LH_KEY_BACK_TICK = 0x29,
+  LH_KEY_SHIFT = 0x2A,
+  LH_KEY_Z = 0x2C,
+
+  LH_KEY_NUMPAD_ASTERIX = 0x37,
+
+  LH_KEY_ALT = 0x38,
+  LH_KEY_SPACE = 0x39,
+  LH_KEY_CAPSLOCK = 0x3A,
+
+  LH_KEY_F1 = 0x3B,
+  LH_KEY_F2 = 0x3C,
+  LH_KEY_F3 = 0x3D,
+  LH_KEY_F4 = 0x3E,
+  LH_KEY_F5 = 0x3F,
+  LH_KEY_F6 = 0x40,
+  LH_KEY_F7 = 0x41,
+  LH_KEY_F8 = 0x42,
+  LH_KEY_F9 = 0x43,
+
+  LH_KEY_HOME = 0xC7,
+  LH_KEY_UP = 0xC8,
+  LH_KEY_PAGE_UP = 0xC9,
+  LH_KEY_LEFT = 0xCB,
+  LH_KEY_RIGHT = 0xCD,
+  LH_KEY_END = 0xCD,
+  LH_KEY_DOWN = 0xD0,
+  LH_KEY_PAGE_DOWN = 0xD1,
+  LH_KEY_INSERT = 0xD2,
+  LH_KEY_DELETE = 0xD3,
+  LH_KEY_LEFT_WINDOWS = 0xDB,
+  LH_KEY_RIGHT_WINDOWS = 0xDB,
+
+  _LH_KEY_FORCE_32_BITS = 0x7FFFFFFF,
+};
+
+struct ControlKey {
+  enum LH_KEY key_code_0;
+  char16_t key_name_0[0x40];
+  enum LH_KEY key_code_1;
+  char16_t key_name_1[0x40];
+};
+static_assert(sizeof(struct ControlKey) == 0x108, "Struct is of wrong size");
+
+enum MOUSE_CONTROL_BUTTON {
+  MOUSE_CONTROL_BUTTON_NONE = 0x0,
+  
+  MOUSE_CONTROL_BUTTON_LMB = 0x1,
+  MOUSE_CONTROL_BUTTON_MMB = 0x2,
+  MOUSE_CONTROL_BUTTON_WHEEL_UP = 0x3,
+  MOUSE_CONTROL_BUTTON_WHEEL_DOWN = 0x4,
+  MOUSE_CONTROL_BUTTON_RMB = 0x5,
+
+  _MOUSE_CONTROL_BUTTON_FORCE_32_BITS = 0x7FFFFFFF
+};
+
+struct ControlMouse {
+  enum MOUSE_CONTROL_BUTTON button_code;
+  char16_t button_name[0x80];
+};
+static_assert(sizeof(struct ControlMouse) == 0x104, "Struct is of wrong size");
+
+struct BindableAction {
+  char16_t name[0x80];
+  struct ControlKey control_key;
+  struct ControlMouse control_mouse;
+};
+static_assert(sizeof(struct BindableAction) == 0x30c, "Struct is of wrong size");
+
+struct ControlMap {
+  struct BindableAction actions[_BINDABLE_ACTIONS_COUNT];
+  bool32_t state[_BINDABLE_ACTIONS_COUNT];
+  uint32_t field_0x6510;
+  uint32_t field_0x6514;
+  uint32_t field_0x6518;
+  uint32_t field_0x651c;
+  uint32_t field_0x6520;
+  uint32_t field_0x6524;
+  uint32_t field_0x6528;
+  uint32_t field_0x652c;
+  uint32_t field_0x6530;
+};
+static_assert(sizeof(struct ControlMap) == 0x6534, "Struct is of wrong size");
+
+#endif // BLACKHACK_CONTROLMAP_H

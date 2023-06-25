@@ -59,6 +59,7 @@
 #include "Resources/Loaders.h"
 #include "Resources/ResourcesInterface.h"
 #include "Serializer/FotFile.h"
+#include "ipc/EnetIpc.h"
 
 #ifdef _WIN32
 // clang-format off
@@ -181,6 +182,7 @@ Game::~Game()
 		resources.GetAnimations().Clear();
 	}
 
+	Locator::ipc::reset();
 	Locator::rendereringSystem::reset();
 	Locator::dynamicsSystem::reset();
 	Locator::cameraBookmarkSystem::reset();
@@ -339,6 +341,8 @@ bool Game::GameLogicLoop()
 
 bool Game::Update()
 {
+	Locator::ipc::value().Frame();
+
 	_profiler->Frame();
 	auto previous = _profiler->GetEntries().at(_profiler->GetEntryIndex(-1)).frameStart;
 	auto current = _profiler->GetEntries().at(_profiler->GetEntryIndex(0)).frameStart;
@@ -475,6 +479,13 @@ bool Game::Update()
 
 bool Game::Initialize()
 {
+<<<<<<< HEAD
+=======
+	Locator::ipc::emplace<EnetIpc>();
+	Locator::resources::emplace<resources::Resources>();
+	Locator::rng::emplace<RandomNumberManagerProduction>();
+	Locator::gameActionSystem::emplace<input::GameActionMap>();
+>>>>>>> b8f6361d (debug: Add ipc)
 	ecs::systems::InitializeGame();
 	auto& resources = Locator::resources::value();
 	auto& meshManager = resources.GetMeshes();
@@ -650,6 +661,8 @@ bool Game::Initialize()
 
 	_sky = std::make_unique<Sky>();
 	_water = std::make_unique<Water>();
+
+	Locator::ipc::value().Connect();
 	return true;
 }
 
