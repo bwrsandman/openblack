@@ -195,6 +195,11 @@ jobs:
           ref: master
           path: clang-tidy-review
 
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v2
+        with:
+          version: "18.0"
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
