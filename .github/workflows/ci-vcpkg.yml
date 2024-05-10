@@ -152,15 +152,8 @@ jobs:
       CXX: ${{ matrix.cxx }}
 
   clang-tidy-review:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     needs: build
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
     if: startsWith(github.event_name, 'pull_request')
     steps:
       - uses: actions/checkout@v3
@@ -168,26 +161,12 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           submodules: recursive
+
       - name: Download generated compile database
         uses: actions/download-artifact@v3
         with:
           name: openblack-compile-database
           path: cmake-build-presets/ninja-multi-vcpkg
-      - name: Add base repo to git config
-        run: git remote add upstream ${{ github.event.pull_request.base.repo.html_url }}
-        if: startsWith(github.event_name, 'pull_request')
-
-      - name: Install MacOS dependencies
-        run: |
-          brew install pkg-config
-          mkdir -p ~/bin
-          brew --prefix llvm@15
-          ls $(brew --prefix llvm@15)/bin
-          ln -s $(brew --prefix llvm@15)/bin/clang-tidy ~/bin/clang-tidy
-          echo "export PATH=$PATH:~/bin" >> $GITHUB_ENV
-          ls -l ~/bin/clang-tidy
-          clang-tidy --version
-        if: startsWith(matrix.os, 'macos')
 
       - name: Checkout clang-tidy-review
         uses: actions/checkout@v4
@@ -206,7 +185,7 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Non-docker clang-tidy-check
+      - name: Create review
         run: |
           clang-tidy --version
           pip install ${{github.workspace}}/clang-tidy-review/post/clang_tidy_review
@@ -222,38 +201,7 @@ jobs:
             clang-tidy-review-output.json
             clang_tidy_review.yaml
 
-  clang-tidy-comments:
-    runs-on: ubuntu-latest
-    needs: clang-tidy-review
-    steps:
-      - name: Checkout clang-tidy-review
-        uses: actions/checkout@v4
-        with:
-          repository: ZedThree/clang-tidy-review
-          ref: master
-          path: clang-tidy-review
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: ClangTidyReviewOutputs-ubuntu-latest
-          path: ubuntu-latest
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: ClangTidyReviewOutputs-macos-latest
-          path: macos-latest
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: ClangTidyReviewOutputs-windows-latest
-          path: windows-latest
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-
-      - name: Non-docker clang-tidy-check
+      - name: Post review
         run: |
           clang-tidy --version
           pip install ${{github.workspace}}/clang-tidy-review/post/clang_tidy_review
