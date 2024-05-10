@@ -27,7 +27,7 @@ bool MpegAudioDecoder::Open(const std::vector<uint8_t>& buffer)
 void MpegAudioDecoder::Read(std::vector<int16_t>& buffer)
 {
 	auto frameCount = drmp3_get_pcm_frame_count(&_mp3);
-	buffer.resize(static_cast<size_t>(frameCount * _mp3.channels));
+	buffer.resize(static_ cast<size_t>(frameCount * _mp3.channels));
 	[[maybe_unused]] const auto framesRead = drmp3_read_pcm_frames_s16(&_mp3, frameCount, buffer.data());
 }
 

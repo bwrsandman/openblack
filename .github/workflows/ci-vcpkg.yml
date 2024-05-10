@@ -153,6 +153,7 @@ jobs:
 
   clang-tidy-review:
     runs-on: ${{ matrix.os }}
+    needs: build
     strategy:
       fail-fast: false
       matrix:
@@ -198,7 +199,7 @@ jobs:
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v2
         with:
-          version: "18.0"
+          version: '17'
 
       - uses: actions/setup-python@v5
         with:
