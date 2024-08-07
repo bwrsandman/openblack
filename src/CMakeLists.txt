@@ -192,9 +192,11 @@ if (MSVC)
             /permissive-
             # Set correct version of c++
             /Zc:__cplusplus
-            # Use utf-8 for std::print and fmt/spdlog
-            /utf-8
   )
+  if(NOT "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "Clang")
+    # Use utf-8 for std::print and fmt/spdlog
+    target_compile_options(openblack_lib PRIVATE /utf-8)
+  endif ()
 
   # Debug builds create a debug console
   set_target_properties(

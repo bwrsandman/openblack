@@ -4,7 +4,7 @@ add_executable(gen_info gen_info.cpp)
 target_include_directories(gen_info PRIVATE ../../src)
 target_link_libraries(gen_info PRIVATE glm::glm cxxopts::cxxopts)
 set_property(TARGET gen_info PROPERTY FOLDER "tests")
-if (MSVC)
+if (MSVC AND NOT "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "Clang")
   target_compile_options(gen_info PRIVATE /utf-8)
 endif ()
 
