@@ -84,6 +84,10 @@
 #include "ShaderIncluder.h"
 // clang-format on
 
+
+
+#include "generated/shaders/sky.slang.spv.h"
+
 namespace openblack::graphics
 {
 

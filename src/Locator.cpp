@@ -124,7 +124,7 @@ bool openblack::InitializeGame() noexcept
 	Locator::entitiesRegistry::emplace<Registry>();
 	Locator::handSystem::emplace<HandSystem>();
 	Locator::temple::emplace<TempleInterior>();
-	Locator::oceanSystem::emplace<Ocean>();
+	// Locator::oceanSystem::emplace<Ocean>();
 	Locator::skySystem::emplace<Sky>();
 
 	return true;

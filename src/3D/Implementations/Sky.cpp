@@ -63,10 +63,10 @@ Sky::Sky() noexcept
 		}
 	}
 
-	const auto* textureMem = bgfx::makeRef(_bitmaps.data(), static_cast<uint32_t>(_bitmaps.size() * sizeof(_bitmaps[0])));
 	_texture = Locator::rendererInterface::value().CreateTexture2d(
-	    "Sky", textureMem, {k_TextureResolution[0], k_TextureResolution[1]}, k_TextureResolution[2], TextureFormat::BGR5A1,
-	    Wrapping::ClampEdge, Filter::Linear);
+	    "Sky", {reinterpret_cast<const uint8_t*>(_bitmaps.data()), _bitmaps.size() * sizeof(_bitmaps[0])},
+	    {k_TextureResolution[0], k_TextureResolution[1]}, k_TextureResolution[2], TextureFormat::BGR5A1, Wrapping::ClampEdge,
+	    Filter::Linear);
 
 	_timeOfDay = 1.0f;
 }

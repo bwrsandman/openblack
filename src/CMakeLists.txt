@@ -10,58 +10,74 @@ endif ()
 
 set(OPENBLACK_RC ${CMAKE_SOURCE_DIR}/assets/resource/icon/openblack.rc)
 
-file(GLOB OPENBLACK_IMGUI_VS_SHADERS
-     "${CMAKE_SOURCE_DIR}/assets/shaders/imgui/vs_*.sc"
-)
-file(GLOB OPENBLACK_IMGUI_FS_SHADERS
-     "${CMAKE_SOURCE_DIR}/assets/shaders/imgui/fs_*.sc"
-)
-bgfx_compile_shaders(
-  AS_HEADERS
-  TYPE VERTEX
-  SHADERS ${OPENBLACK_IMGUI_VS_SHADERS}
-  VARYING_DEF ${CMAKE_SOURCE_DIR}/assets/shaders/imgui/varying.def.sc
-  OUTPUT_DIR ${CMAKE_BINARY_DIR}/include/generated/shaders/imgui
-)
-bgfx_compile_shaders(
-  AS_HEADERS
-  TYPE FRAGMENT
-  SHADERS ${OPENBLACK_IMGUI_FS_SHADERS}
-  VARYING_DEF ${CMAKE_SOURCE_DIR}/assets/shaders/imgui/varying.def.sc
-  OUTPUT_DIR ${CMAKE_BINARY_DIR}/include/generated/shaders/imgui
+# file(GLOB OPENBLACK_IMGUI_VS_SHADERS
+#      "${CMAKE_SOURCE_DIR}/assets/shaders/imgui/vs_*.sc"
+# )
+# file(GLOB OPENBLACK_IMGUI_FS_SHADERS
+#      "${CMAKE_SOURCE_DIR}/assets/shaders/imgui/fs_*.sc"
+# )
+# bgfx_compile_shaders(
+#   AS_HEADERS
+#   TYPE VERTEX
+#   SHADERS ${OPENBLACK_IMGUI_VS_SHADERS}
+#   VARYING_DEF ${CMAKE_SOURCE_DIR}/assets/shaders/imgui/varying.def.sc
+#   OUTPUT_DIR ${CMAKE_BINARY_DIR}/include/generated/shaders/imgui
+# )
+# bgfx_compile_shaders(
+#   AS_HEADERS
+#   TYPE FRAGMENT
+#   SHADERS ${OPENBLACK_IMGUI_FS_SHADERS}
+#   VARYING_DEF ${CMAKE_SOURCE_DIR}/assets/shaders/imgui/varying.def.sc
+#   OUTPUT_DIR ${CMAKE_BINARY_DIR}/include/generated/shaders/imgui
+# )
+
+function(compile_shaders)
+  set(options "")
+  set(oneValueArgs TYPE OUTPUT_DIR)
+	set(multiValueArgs SHADERS)
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" "${ARGN}")
+
+  set(OUTPUTS "")
+  set(COMMANDS "")
+  set(MKDIR_COMMANDS "")
+  list(APPEND MKDIR_COMMANDS
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${ARGS_OUTPUT_DIR}
+  )
+  list(APPEND COMMANDS COMMAND slang-sdl3-gpu-compiler ${ARGS_SHADERS} -o ${ARGS_OUTPUT_DIR})
+
+
+  foreach(SHADER_FILE ${ARGS_SHADERS})
+    source_group("Shaders" FILES "${SHADER}")
+    get_filename_component(SHADER_FILE_BASENAME ${SHADER_FILE} NAME)
+    get_filename_component(SHADER_FILE_NAME_WE ${SHADER_FILE} NAME_WE)
+    get_filename_component(SHADER_FILE_ABSOLUTE ${SHADER_FILE} ABSOLUTE)
+
+    # SPIR-V
+    set(OUTPUT ${ARGS_OUTPUT_DIR}/${SHADER_FILE_BASENAME}.spv.h)
+    
+    add_custom_command(
+      OUTPUT ${OUTPUT}
+      ${MKDIR_COMMANDS} ${COMMANDS}
+      MAIN_DEPENDENCY ${SHADER_FILE_ABSOLUTE}
+    )
+  endforeach()
+
+endfunction()
+
+file(GLOB OPENBLACK_SHADERS "${CMAKE_SOURCE_DIR}/assets/shaders/*.slang")
+compile_shaders(
+   SHADERS ${OPENBLACK_SHADERS}
+   OUTPUT_DIR ${CMAKE_BINARY_DIR}/include/generated/shaders
 )
 
-file(GLOB OPENBLACK_VERTEX_SHADERS "${CMAKE_SOURCE_DIR}/assets/shaders/vs_*.sc")
-file(GLOB OPENBLACK_FRAGMENT_SHADERS
-     "${CMAKE_SOURCE_DIR}/assets/shaders/fs_*.sc"
-)
-file(GLOB OPENBLACK_VARYING_DEF_FILE
-     "${CMAKE_SOURCE_DIR}/assets/shaders/varying.def.sc"
-)
-
-bgfx_compile_shaders(
-  AS_HEADERS
-  TYPE VERTEX
-  SHADERS ${OPENBLACK_VERTEX_SHADERS}
-  VARYING_DEF ${OPENBLACK_VARYING_DEF_FILE}
-  OUTPUT_DIR ${CMAKE_BINARY_DIR}/include/generated/shaders
-)
-bgfx_compile_shaders(
-  AS_HEADERS
-  TYPE FRAGMENT
-  SHADERS ${OPENBLACK_FRAGMENT_SHADERS}
-  VARYING_DEF ${OPENBLACK_VARYING_DEF_FILE}
-  OUTPUT_DIR ${CMAKE_BINARY_DIR}/include/generated/shaders
-)
-
-list(APPEND OPENBLACK_SHADERS ${OPENBLACK_IMGUI_VS_SHADERS})
-list(APPEND OPENBLACK_SHADERS ${OPENBLACK_IMGUI_FS_SHADERS})
-list(APPEND OPENBLACK_SHADERS
-     ${CMAKE_SOURCE_DIR}/assets/shaders/imgui/varying.def.sc
-)
-list(APPEND OPENBLACK_SHADERS ${OPENBLACK_VERTEX_SHADERS})
-list(APPEND OPENBLACK_SHADERS ${OPENBLACK_FRAGMENT_SHADERS})
-list(APPEND OPENBLACK_SHADERS ${OPENBLACK_VARYING_DEF_FILE})
+# list(APPEND OPENBLACK_SHADERS ${OPENBLACK_IMGUI_VS_SHADERS})
+# list(APPEND OPENBLACK_SHADERS ${OPENBLACK_IMGUI_FS_SHADERS})
+# list(APPEND OPENBLACK_SHADERS
+#      ${CMAKE_SOURCE_DIR}/assets/shaders/imgui/varying.def.sc
+# )
+# list(APPEND OPENBLACK_SHADERS ${OPENBLACK_VERTEX_SHADERS})
+# list(APPEND OPENBLACK_SHADERS ${OPENBLACK_FRAGMENT_SHADERS})
+# list(APPEND OPENBLACK_SHADERS ${OPENBLACK_VARYING_DEF_FILE})
 
 if (ANDROID)
   add_library(openblack_lib SHARED)
@@ -78,9 +94,7 @@ target_sources(
           ${OPENBLACK_HEADERS}
           ${OPENBLACK_RC}
           ${OPENBLACK_SHADERS}
-          ${OPENBLACK_VERTEX_SHADERS}
-          ${OPENBLACK_FRAGMENT_SHADERS}
-          ${OPENBLACK_VARYING_DEF_FILE}
+          # "${CMAKE_BINARY_DIR}/include/generated/shaders/sky.slang.spv.h"
 )
 set_target_properties(openblack_lib PROPERTIES LINKER_LANGUAGE CXX)
 

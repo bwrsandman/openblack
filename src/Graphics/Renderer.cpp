@@ -195,7 +195,7 @@ struct BgfxCallback: public bgfx::CallbackI
 
 } // namespace openblack
 
-std::unique_ptr<RendererInterface> RendererInterface::Create(GraphicsBackend backend, bool vsync) noexcept
+std::unique_ptr<RendererInterface> Renderer::Create(GraphicsBackend backend, bool vsync) noexcept
 {
 	bgfx::Init init {};
 	switch (backend)
@@ -259,7 +259,7 @@ std::unique_ptr<RendererInterface> RendererInterface::Create(GraphicsBackend bac
 		return nullptr;
 	}
 
-	return std::make_unique<Renderer>(bgfxReset, std::move(bgfxCallback));
+	return {};//std::make_unique<Renderer>(bgfxReset, std::move(bgfxCallback));
 }
 
 Renderer::Renderer(uint32_t bgfxReset, std::unique_ptr<BgfxCallback>&& bgfxCallback) noexcept
@@ -514,8 +514,9 @@ void Renderer::DrawFootprintPass(const DrawSceneDesc& drawDesc) const
 	}
 }
 
-void Renderer::DrawScene(const DrawSceneDesc& drawDesc) const noexcept
+void Renderer::DrawScene(const DrawSceneDesc& drawDesc) noexcept
 {
+	return;
 	// TODO(bwrsandman): Footprint framebuffer doesn't need to be updated each frame
 	DrawFootprintPass(drawDesc);
 	// Reflection Pass
@@ -886,9 +887,6 @@ Texture2dUniquePtr Renderer::CreateTexture2d(std::string name, const void* memor
 	case Wrapping::ClampEdge:
 		flags |= BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP;
 		break;
-	case Wrapping::ClampBorder:
-		flags |= BGFX_SAMPLER_U_BORDER | BGFX_SAMPLER_V_BORDER;
-		break;
 	case Wrapping::Repeat:
 		break;
 	case Wrapping::MirroredRepeat:
@@ -916,8 +914,8 @@ Texture2dUniquePtr Renderer::CreateTexture2d(std::string name, const void* memor
 
 	bgfx::frame();
 
-	return {new Texture2d(name, handle, resolution, textureInfo.numLayers, textureInfo.width * textureInfo.bitsPerPixel / 8,
-	                      fromBgfx(textureInfo.format), textureInfo.storageSize),
+	return {new Texture2d(name, handle, {0}, resolution, textureInfo.numLayers,
+	                      fromBgfx(textureInfo.format)),
 	        DestroyTexture2d};
 }
 

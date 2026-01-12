@@ -78,7 +78,6 @@ public:
 
 	void Draw(const DrawDesc& desc) const;
 
-protected:
 	VertexBufferUniquePtr _vertexBuffer;
 	IndexBufferUniquePtr _indexBuffer;
 
