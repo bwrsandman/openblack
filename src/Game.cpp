@@ -345,7 +345,7 @@ bool Game::Update() noexcept
 		}
 	}
 
-	// camera.Update(deltaTime);
+	camera.Update(deltaTime);
 	// Locator::cameraBookmarkSystem::value().Update(deltaTime);
 
 	// Update Game Logic in Registry
@@ -979,7 +979,7 @@ void Game::LoadLandscape(const std::filesystem::path& path)
 	ecs::archetypes::PlayerArchetype::Create(PlayerNames::PLAYER_ONE);
 
 	// Locator::cameraBookmarkSystem::value().Initialize();
-	// Locator::dynamicsSystem::value().RegisterIslandRigidBodies(Locator::terrainSystem::value());
+	Locator::dynamicsSystem::value().RegisterIslandRigidBodies(Locator::terrainSystem::value());
 	Locator::playerSystem::value().RegisterPlayers();
 }
 
