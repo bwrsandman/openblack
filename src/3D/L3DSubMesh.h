@@ -28,6 +28,7 @@ class ShaderProgram;
 
 class L3DSubMesh
 {
+public:
 	struct Primitive
 	{
 		enum class BlendMode : uint8_t

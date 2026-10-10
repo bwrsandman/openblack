@@ -499,6 +499,10 @@ bool writeHeader(const std::filesystem::path& headerPath, SlangCompileTarget tar
 			for (uint32_t i = 0; i < entry->getParameterCount(); ++i)
 			{
 				auto* param = entry->getParameterByIndex(i);
+				if (const auto* semantic = param->getSemanticName(); semantic && std::string_view(semantic).starts_with("SV_"))
+				{
+					continue; // System values do not occupy vertex-buffer attributes.
+				}
 				auto* varLayout = param->getVariable();
 				auto* typeLayout = varLayout->getType();
 				assert(typeLayout->getKind() == slang::TypeReflection::Kind::Struct);
@@ -530,6 +534,10 @@ bool writeHeader(const std::filesystem::path& headerPath, SlangCompileTarget tar
 			for (uint32_t i = 0; i < entry->getParameterCount(); ++i)
 			{
 				auto* param = entry->getParameterByIndex(i);
+				if (const auto* semantic = param->getSemanticName(); semantic && std::string_view(semantic).starts_with("SV_"))
+				{
+					continue; // System values do not occupy vertex-buffer attributes.
+				}
 				auto* varLayout = param->getVariable();
 				auto* typeLayout = varLayout->getType();
 				assert(typeLayout->getKind() == slang::TypeReflection::Kind::Struct);
